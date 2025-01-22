@@ -20,7 +20,7 @@ BuddyGo เป็นแพลตฟอร์มเว็บที่ช่วย
 1. **Clone repository:**
 
     ```bash
-    git clone https://github.com/Forgetmenot46/buddyGowebsite
+    git clone https://github.com/Forgetmenot46/buddygo
     ```
 
 2. **ตั้งค่าบัญชีท้องถิ่น:**
