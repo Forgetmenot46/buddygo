@@ -21,4 +21,6 @@ try {
     // แสดงข้อความเมื่อเกิดข้อผิดพลาด
     die("Connection failed: " . $e->getMessage());
 }
+
+
 ?>

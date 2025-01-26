@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 06, 2025 at 07:09 AM
+-- Generation Time: Jan 26, 2025 at 07:51 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -60,15 +60,22 @@ CREATE TABLE `users` (
   `phone_number` varchar(15) NOT NULL,
   `email` varchar(100) NOT NULL,
   `gender` enum('ชาย','หญิง','อื่นๆ') DEFAULT 'อื่นๆ',
-  `national_id` varchar(20) DEFAULT NULL,
+  `national_id` enum('Thai','American','British','Japanese','Chinese','Indian','Australian') NOT NULL,
   `profile_picture` varchar(255) DEFAULT NULL,
-  `languages_spoken` text DEFAULT NULL,
+  `languages_spoken` set('english','thai','chinese','japanese','spanish') NOT NULL,
   `interests` text DEFAULT NULL,
   `verified_status` tinyint(1) DEFAULT 0,
   `account_status` enum('Active','Suspended','Deleted') DEFAULT 'Active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `username`, `firstname`, `lastname`, `birthdate`, `PASSWORD`, `country_phoneid`, `phone_number`, `email`, `gender`, `national_id`, `profile_picture`, `languages_spoken`, `interests`, `verified_status`, `account_status`, `created_at`, `updated_at`) VALUES
+(5, 'testuser01', 'John', 'Doe', '1995-12-31', '$2y$10$4ZoY4Z5klXyf6cFgvVuvD.2wLAE5eVU3feZQTu1zx.ZHA5gPSoEam', '+66', '+66', 'testuser@example.com', 'อื่นๆ', 'Thai', 'profile_679361c79e24e2.43622299.png', 'thai', 'reading', 0, 'Active', '2025-01-24 09:47:51', '2025-01-24 09:59:26');
 
 -- --------------------------------------------------------
 
@@ -116,8 +123,7 @@ ALTER TABLE `languages`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `national_id` (`national_id`);
+  ADD UNIQUE KEY `email` (`email`);
 
 --
 -- Indexes for table `user_interests`
@@ -153,7 +159,7 @@ ALTER TABLE `languages`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
