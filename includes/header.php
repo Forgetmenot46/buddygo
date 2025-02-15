@@ -1,73 +1,130 @@
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="../assets/css/headerstyle.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
 <?php
-// เริ่ม session ถ้ายังไม่ได้เริ่ม
+// ตรวจสอบว่ามี session เปิดอยู่แล้วหรือไม่ก่อนเรียก session_start()
 if (session_status() === PHP_SESSION_NONE) {
-    session_start(); // เริ่ม session สำหรับการเก็บข้อมูลของผู้ใช้
+    session_start();
 }
 
-// เรียกไฟล์การเชื่อมต่อกับฐานข้อมูล
-require_once '../config/config.php';
-
-// กำหนดค่าเริ่มต้นสำหรับภาพโปรไฟล์
-$profilePicture = 'default.png'; // ถ้าไม่มีภาพโปรไฟล์จะใช้ 'default.png'
-$userName = null; // กำหนดชื่อผู้ใช้เริ่มต้นเป็น null
-
-// ตรวจสอบว่าผู้ใช้ได้ล็อกอินหรือไม่
-if (isset($_SESSION['user_id'])) {
-    $userId = $_SESSION['user_id']; // ดึง id ของผู้ใช้จาก session
-
-    // สร้างคำสั่ง SQL เพื่อดึงชื่อผู้ใช้และภาพโปรไฟล์จากฐานข้อมูล
-    $query = "SELECT username, profile_picture FROM users WHERE id = ?";
-    $stmt = $conn->prepare($query); // เตรียมคำสั่ง SQL
-    $stmt->bind_param("i", $userId); // ผูกค่าของ user_id ไปที่ตัวแปรในคำสั่ง SQL
-    $stmt->execute(); // รันคำสั่ง SQL
-    $result = $stmt->get_result(); // ดึงผลลัพธ์จากฐานข้อมูล
-
-    // ตรวจสอบว่าผลลัพธ์จากการค้นหามีข้อมูลหรือไม่
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc(); // ดึงข้อมูลผู้ใช้จากฐานข้อมูล
-        $profilePicture = $user['profile_picture'] ?? 'default.png'; // ถ้าผู้ใช้มีภาพโปรไฟล์ จะใช้ภาพนั้น ถ้าไม่มีก็ใช้ 'default.png'
-        $userName = $user['username']; // กำหนดชื่อผู้ใช้
-    }
-    $stmt->close(); // ปิดการเชื่อมต่อกับฐานข้อมูล
-}
+// เช็คว่าผู้ใช้ล็อกอินหรือยัง
+$isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสดงว่า login แล้ว
 ?>
 
-<!-- แสดง Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container">
-        <!-- ลิงก์ไปหน้า Home -->
-        <a class="navbar-brand" href="../pages/index.php">
-            <img src="../assets/images/logo1.png" alt="BuddyGo Logo" height="40">
+<!-- Sidebar -->
+<aside class="sidebar">
+    <header class="sidebar-header" >
+        <a href="../pages/index.php" class="header-logo" >
+            <img id="sidebar-logo" src="../assets/images/logo3.png" style="width : 250px" alt="BuddyGo">
         </a>
-        <!-- ปุ่มสำหรับแสดงเมนูบนมือถือ -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <!-- เมนูหลัก -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <!-- ลิงก์ไปหน้า Home -->
-                <li class="nav-item"><a class="nav-link" href="../pages/about.php">About</a></li>
-                <!-- ลิงก์ไปหน้า Profile -->
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="../pages/proflie.php">Profile</a></li>
-                <?php endif; ?>
-                <!-- หากผู้ใช้ล็อกอินแล้ว จะมีปุ่ม Dashboard -->
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="../pages/settings.php">Settings</a></li>
-                <?php endif; ?>
-            </ul>
-            <!-- ถ้าผู้ใช้ยังไม่ได้ล็อกอิน ให้แสดงปุ่ม Login -->
-            <?php if (!isset($_SESSION['user_id'])): ?>
-                <a href="../pages/login.php" class="btn btn-primary">Login</a>
-            <?php else: ?>
-                <!-- ถ้าผู้ใช้ล็อกอินแล้ว จะแสดงภาพโปรไฟล์และชื่อผู้ใช้ พร้อมปุ่ม Logout -->
-                <div class="header-profile d-flex align-items-center">
-                    <img src="../uploads/profile_pictures/<?php echo htmlspecialchars($profilePicture); ?>" alt="Profile Picture" class="profile-img" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                    <span class="navbar-text mx-2">Hello, <?php echo htmlspecialchars($userName); ?>!</span>
-                    <a href="../pages/logout.php" class="btn btn-danger">Logout</a>
-                </div>
+    </header>
+    <nav class="sidebar-nav">
+        <ul class="nav-list primary-nav">
+            <li class="nav-item">
+                <a href="../pages/index.php" class="nav-link">
+                    <span class="material-symbols-rounded">dashboard</span>
+                    <span class="nav-label">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <span class="material-symbols-rounded">data_loss_prevention</span>
+                    <span class="nav-label">Explore</span>
+                </a>
+            </li>
+
+            <?php if ($isLoggedIn) : ?>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="material-symbols-rounded">hiking</span>
+                        <span class="nav-label">My Activities</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="material-symbols-rounded">edit_square</span>
+                        <span class="nav-label">Create Activity</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="material-symbols-rounded">chat</span>
+                        <span class="nav-label">Messages</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="../pages/profile.php" class="nav-link">
+                        <span class="material-symbols-rounded">account_circle</span>
+                        <span class="nav-label">My Profile</span>
+                    </a>
+                </li>
+            <?php endif; ?>
+        </ul>
+
+        <!-- เมนูล่าง -->
+        <ul class="nav-list secondary-nav">
+            <?php if ($isLoggedIn) : ?>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="material-symbols-rounded">settings</span>
+                        <span class="nav-label">Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logout.php" class="nav-link" onclick="return confirmLogout(event)">
+                        <span class="material-symbols-rounded">logout</span>
+                        <span class="nav-label">Logout</span>
+                    </a>
+                </li>
+            <?php endif; ?>
+        </ul>
+    </nav>
+</aside>
+
+<!-- Navbar for mobile view -->
+<nav class="navbar navbar-expand d-lg-none">
+    <div class="container-fluid">
+        <a href="../pages/index.php" class="header-logo">
+            <img id="mobile-logo" src="../assets/images/logo3.png" style="width : 150px"alt="BuddyGo">
+        </a>
+        <div class="navbar-nav gap-3">
+            <li class="nav-item">
+                <a class="nav-link text-white" href="../pages/index.php">
+                    <span class="material-symbols-rounded">dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#">
+                    <span class="material-symbols-rounded">data_loss_prevention</span>
+                </a>
+            </li>
+            <?php if ($isLoggedIn) : ?>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">
+                        <span class="material-symbols-rounded">chat</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="../pages/profile.php">
+                        <span class="material-symbols-rounded">account_circle</span>
+                    </a>
+                </li>
+
+
             <?php endif; ?>
         </div>
     </div>
 </nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function confirmLogout(event) {
+        if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?")) {
+            event.preventDefault(); // Prevent the default action if the user cancels
+        }
+    }
+</script>

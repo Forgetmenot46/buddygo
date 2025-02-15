@@ -1,0 +1,113 @@
+:root {
+    --primary-color: #163172;
+    --secondary-color: #F6F6F6;
+    --accent-color: #1E56A0;
+    --text-color: #333;
+    --light-text: #666;
+    --border-radius: 12px;
+    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+
+.main-content {
+    margin-left: 270px;
+    padding: 20px;
+    transition: 0.4s;
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 0;
+        margin-top: 20px;
+    }
+}
+
+.stats-card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.stats-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #163172;
+}
+
+.stats-label {
+    color: #666;
+    font-size: 14px;
+}
+
+.card-body {
+    flex-grow: 1;
+    /* ทำให้เนื้อหาภายใน card ขยายจนเต็มพื้นที่ */
+}
+
+.card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    /* เพิ่มให้ card ใช้ flexbox */
+    min-height: 100%;
+    /* ให้ card ยืดเต็มความสูง */
+}
+
+/* Added styles for profile card */
+.profile-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+footer {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    background-color: #fff;
+    /* Ensure footer has a background */
+    z-index: 1000;
+    /* Keep it above other content */
+}
+
+/* Added styles for profile image */
+.profile-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+/* Add more global styles as needed */

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 26, 2025 at 07:51 PM
+-- Generation Time: Feb 15, 2025 at 04:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,13 +24,58 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `countriesphone`
+--
+
+CREATE TABLE `countriesphone` (
+  `country_id` int(11) NOT NULL,
+  `country_name` varchar(100) NOT NULL,
+  `country_phone_id` varchar(5) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `countriesphone`
+--
+
+INSERT INTO `countriesphone` (`country_id`, `country_name`, `country_phone_id`) VALUES
+(1, 'Thailand', '+66'),
+(2, 'United States', '+1'),
+(3, 'United Kingdom', '+44'),
+(4, 'Japan', '+81'),
+(5, 'China', '+86'),
+(6, 'Spain', '+34'),
+(7, 'France', '+33'),
+(8, 'Germany', '+49'),
+(9, 'Italy', '+39'),
+(10, 'South Korea', '+82'),
+(11, 'Portugal', '+351');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `interests`
 --
 
 CREATE TABLE `interests` (
   `id` int(11) NOT NULL,
   `interest_name` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `interests`
+--
+
+INSERT INTO `interests` (`id`, `interest_name`) VALUES
+(7, 'Art'),
+(8, 'Camping'),
+(4, 'Cooking'),
+(9, 'Cycling'),
+(10, 'DIY Projects'),
+(2, 'Fitness'),
+(5, 'Hiking'),
+(6, 'Movies'),
+(1, 'Music'),
+(3, 'Photography');
 
 -- --------------------------------------------------------
 
@@ -43,6 +88,17 @@ CREATE TABLE `languages` (
   `language_name` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `languages`
+--
+
+INSERT INTO `languages` (`id`, `language_name`) VALUES
+(3, 'Chinese'),
+(1, 'English'),
+(4, 'Japanese'),
+(5, 'Spanish'),
+(2, 'Thai');
+
 -- --------------------------------------------------------
 
 --
@@ -51,31 +107,26 @@ CREATE TABLE `languages` (
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `username` varchar(50) NOT NULL,
   `firstname` varchar(100) NOT NULL,
   `lastname` varchar(100) NOT NULL,
-  `birthdate` date NOT NULL,
-  `PASSWORD` varchar(255) NOT NULL,
-  `country_phoneid` varchar(3) NOT NULL,
-  `phone_number` varchar(15) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `nickname` varchar(100) DEFAULT NULL,
+  `user_languagesID` int(11) DEFAULT NULL,
+  `user_interestsID` int(11) DEFAULT NULL,
+  `birthdate` date DEFAULT NULL,
+  `country_id` int(11) DEFAULT NULL,
+  `phone_number` varchar(15) DEFAULT NULL,
   `email` varchar(100) NOT NULL,
-  `gender` enum('ชาย','หญิง','อื่นๆ') DEFAULT 'อื่นๆ',
-  `national_id` enum('Thai','American','British','Japanese','Chinese','Indian','Australian') NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `gender` enum('male','female','other') DEFAULT 'other',
   `profile_picture` varchar(255) DEFAULT NULL,
-  `languages_spoken` set('english','thai','chinese','japanese','spanish') NOT NULL,
-  `interests` text DEFAULT NULL,
   `verified_status` tinyint(1) DEFAULT 0,
-  `account_status` enum('Active','Suspended','Deleted') DEFAULT 'Active',
+  `last_login` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_admin` tinyint(1) DEFAULT 0,
+  `phone_verified` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (`id`, `username`, `firstname`, `lastname`, `birthdate`, `PASSWORD`, `country_phoneid`, `phone_number`, `email`, `gender`, `national_id`, `profile_picture`, `languages_spoken`, `interests`, `verified_status`, `account_status`, `created_at`, `updated_at`) VALUES
-(5, 'testuser01', 'John', 'Doe', '1995-12-31', '$2y$10$4ZoY4Z5klXyf6cFgvVuvD.2wLAE5eVU3feZQTu1zx.ZHA5gPSoEam', '+66', '+66', 'testuser@example.com', 'อื่นๆ', 'Thai', 'profile_679361c79e24e2.43622299.png', 'thai', 'reading', 0, 'Active', '2025-01-24 09:47:51', '2025-01-24 09:59:26');
 
 -- --------------------------------------------------------
 
@@ -86,7 +137,7 @@ INSERT INTO `users` (`id`, `username`, `firstname`, `lastname`, `birthdate`, `PA
 CREATE TABLE `user_interests` (
   `user_id` int(11) NOT NULL,
   `interest_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -97,11 +148,19 @@ CREATE TABLE `user_interests` (
 CREATE TABLE `user_languages` (
   `user_id` int(11) NOT NULL,
   `language_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `countriesphone`
+--
+ALTER TABLE `countriesphone`
+  ADD PRIMARY KEY (`country_id`),
+  ADD UNIQUE KEY `country_name` (`country_name`),
+  ADD UNIQUE KEY `country_phone_id` (`country_phone_id`);
 
 --
 -- Indexes for table `interests`
@@ -123,7 +182,7 @@ ALTER TABLE `languages`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD KEY `country_id` (`country_id`);
 
 --
 -- Indexes for table `user_interests`
@@ -144,40 +203,52 @@ ALTER TABLE `user_languages`
 --
 
 --
+-- AUTO_INCREMENT for table `countriesphone`
+--
+ALTER TABLE `countriesphone`
+  MODIFY `country_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
 -- AUTO_INCREMENT for table `interests`
 --
 ALTER TABLE `interests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `languages`
 --
 ALTER TABLE `languages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
 --
 
 --
+-- Constraints for table `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`country_id`) REFERENCES `countriesphone` (`country_id`);
+
+--
 -- Constraints for table `user_interests`
 --
 ALTER TABLE `user_interests`
-  ADD CONSTRAINT `user_interests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `user_interests_ibfk_2` FOREIGN KEY (`interest_id`) REFERENCES `interests` (`id`);
+  ADD CONSTRAINT `user_interests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_interests_ibfk_2` FOREIGN KEY (`interest_id`) REFERENCES `interests` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `user_languages`
 --
 ALTER TABLE `user_languages`
-  ADD CONSTRAINT `user_languages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `user_languages_ibfk_2` FOREIGN KEY (`language_id`) REFERENCES `languages` (`id`);
+  ADD CONSTRAINT `user_languages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_languages_ibfk_2` FOREIGN KEY (`language_id`) REFERENCES `languages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
