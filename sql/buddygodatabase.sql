@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 15, 2025 at 04:20 PM
+-- Generation Time: Feb 15, 2025 at 06:35 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -111,8 +111,6 @@ CREATE TABLE `users` (
   `lastname` varchar(100) NOT NULL,
   `username` varchar(100) NOT NULL,
   `nickname` varchar(100) DEFAULT NULL,
-  `user_languagesID` int(11) DEFAULT NULL,
-  `user_interestsID` int(11) DEFAULT NULL,
   `birthdate` date DEFAULT NULL,
   `country_id` int(11) DEFAULT NULL,
   `phone_number` varchar(15) DEFAULT NULL,
@@ -128,6 +126,13 @@ CREATE TABLE `users` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `firstname`, `lastname`, `username`, `nickname`, `birthdate`, `country_id`, `phone_number`, `email`, `password`, `gender`, `profile_picture`, `verified_status`, `last_login`, `is_admin`, `phone_verified`, `created_at`, `updated_at`) VALUES
+(7, 'อรรถชัย', 'สิงห์ทอง', 'Attachai55257', NULL, '2025-02-19', 1, '0993271546', 'wwe543216@hotmail.com', '$2y$10$iou4uNnfx8pRmRuA/lP4hudiCGZz292g5dJyHq1Iw2d9dNHjax9HC', 'male', 'avatar.png', 0, '2025-02-15 16:17:42', 0, 0, '2025-02-15 16:17:42', '2025-02-15 17:21:56');
+
 -- --------------------------------------------------------
 
 --
@@ -139,6 +144,16 @@ CREATE TABLE `user_interests` (
   `interest_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `user_interests`
+--
+
+INSERT INTO `user_interests` (`user_id`, `interest_id`) VALUES
+(7, 3),
+(7, 4),
+(7, 5),
+(7, 6);
+
 -- --------------------------------------------------------
 
 --
@@ -149,6 +164,14 @@ CREATE TABLE `user_languages` (
   `user_id` int(11) NOT NULL,
   `language_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `user_languages`
+--
+
+INSERT INTO `user_languages` (`user_id`, `language_id`) VALUES
+(7, 4),
+(7, 5);
 
 --
 -- Indexes for dumped tables
@@ -224,7 +247,7 @@ ALTER TABLE `languages`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables
