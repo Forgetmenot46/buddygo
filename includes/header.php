@@ -26,27 +26,23 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
             <li class="nav-item">
                 <a href="../pages/index.php" class="nav-link">
                     <span class="material-symbols-rounded">dashboard</span>
-                    <span class="nav-label">Dashboard</span>
+                    <span class="nav-label">Home</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <span class="material-symbols-rounded">data_loss_prevention</span>
-                    <span class="nav-label">Explore</span>
-                </a>
-            </li>
+            
 
             <?php if ($isLoggedIn) : ?>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="material-symbols-rounded">hiking</span>
-                        <span class="nav-label">My Activities</span>
-                    </a>
-                </li>
+                
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <span class="material-symbols-rounded">edit_square</span>
                         <span class="nav-label">Create Activity</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="material-symbols-rounded">notifications</span>
+                        <span class="nav-label">Notifications</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -68,7 +64,7 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
         <ul class="nav-list secondary-nav">
             <?php if ($isLoggedIn) : ?>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="../pages/settings.php" class="nav-link">
                         <span class="material-symbols-rounded">settings</span>
                         <span class="nav-label">Settings</span>
                     </a>
@@ -98,7 +94,7 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white" href="#">
-                    <span class="material-symbols-rounded">data_loss_prevention</span>
+                    <span class="material-symbols-rounded">notifications</span>
                 </a>
             </li>
             <?php if ($isLoggedIn) : ?>
