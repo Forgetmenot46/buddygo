@@ -1,0 +1,166 @@
+/* Responsive CSS */
+
+/* สำหรับอุปกรณ์ขนาดใหญ่ (Desktops) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+}
+
+/* สำหรับแท็บเล็ตแนวนอน */
+@media (max-width: 1199px) {
+    .container {
+        max-width: 960px;
+    }
+    
+    .post-card {
+        margin: 15px 0;
+    }
+}
+
+/* สำหรับแท็บเล็ตแนวตั้ง */
+@media (max-width: 991px) {
+    .container {
+        max-width: 720px;
+    }
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content {
+        margin-left: 220px;
+    }
+
+    .post-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* สำหรับมือถือแนวนอน */
+@media (max-width: 767px) {
+    .container {
+        max-width: 540px;
+    }
+
+    .sidebar {
+        display: none; /* ซ่อน sidebar */
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .post-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mobile-nav {
+        display: block;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        margin-bottom: 20px;
+    }
+
+    .notification-card {
+        padding: 10px;
+    }
+}
+
+/* สำหรับมือถือแนวตั้ง */
+@media (max-width: 575px) {
+    .container {
+        width: 100%;
+        padding: 0 15px;
+    }
+
+    .card {
+        margin: 10px 0;
+        border-radius: 0;
+    }
+
+    .btn {
+        width: 100%;
+        margin: 5px 0;
+    }
+
+    .modal-dialog {
+        margin: 0;
+        height: 100vh;
+        max-height: none;
+    }
+
+    .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+
+    .interests-container {
+        flex-wrap: wrap;
+    }
+
+    .interest-tag {
+        margin: 2px;
+    }
+}
+
+/* ปรับแต่งการแสดงผลของ Navigation */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.mobile-nav-list {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    margin: 0;
+    list-style: none;
+}
+
+.mobile-nav-item {
+    text-align: center;
+}
+
+.mobile-nav-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.mobile-nav-link i {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+/* ปรับแต่งฟอร์ม */
+@media (max-width: 767px) {
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-control {
+        font-size: 16px; /* ป้องกัน zoom บน iOS */
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+
+    .modal-footer {
+        padding: 10px;
+    }
+} 

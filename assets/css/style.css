@@ -8,11 +8,16 @@
     --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600&display=swap');
+
+/* Global font settings */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Prompt', 'Kanit', sans-serif;
 }
 
 body {
@@ -21,8 +26,33 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    font-weight: 300;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Kanit', 'Prompt', sans-serif;
+    font-weight: 500;
+}
+
+.btn {
+    font-family: 'Prompt', 'Kanit', sans-serif;
+    font-weight: 400;
+}
+
+.nav-link {
+    font-family: 'Prompt', 'Kanit', sans-serif;
+    font-weight: 400;
+}
+
+.card-title {
+    font-family: 'Kanit', 'Prompt', sans-serif;
+    font-weight: 500;
+}
+
+.badge {
+    font-family: 'Prompt', 'Kanit', sans-serif;
+    font-weight: 400;
+}
 
 .main-content {
     margin-left: 270px;
@@ -43,7 +73,6 @@ body {
     border-radius: 15px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-
 
 .stats-number {
     font-size: 24px;

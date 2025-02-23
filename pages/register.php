@@ -327,15 +327,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="col-md-6">
         <label for="interests" class="form-label">Interests</label>
         <select class="form-select interestchose" id="multiple-select-custom-field2" name="interests[]" multiple>
-            <option value="1" <?php echo (isset($_POST['interests']) && in_array(1, $_POST['interests'])) ? 'selected' : ''; ?>>Music</option>
-            <option value="2" <?php echo (isset($_POST['interests']) && in_array(2, $_POST['interests'])) ? 'selected' : ''; ?>>Fitness</option>
-            <option value="3" <?php echo (isset($_POST['interests']) && in_array(3, $_POST['interests'])) ? 'selected' : ''; ?>>Photography</option>
-            <option value="4" <?php echo (isset($_POST['interests']) && in_array(4, $_POST['interests'])) ? 'selected' : ''; ?>>Cooking</option>
-            <option value="5" <?php echo (isset($_POST['interests']) && in_array(5, $_POST['interests'])) ? 'selected' : ''; ?>>Hiking</option>
-            <option value="6" <?php echo (isset($_POST['interests']) && in_array(6, $_POST['interests'])) ? 'selected' : ''; ?>>Movies</option>
-            <option value="7" <?php echo (isset($_POST['interests']) && in_array(7, $_POST['interests'])) ? 'selected' : ''; ?>>Art</option>
-            <option value="8" <?php echo (isset($_POST['interests']) && in_array(8, $_POST['interests'])) ? 'selected' : ''; ?>>Travelling</option>
-            <option value="9" <?php echo (isset($_POST['interests']) && in_array(9, $_POST['interests'])) ? 'selected' : ''; ?>>Gaming</option>
+            <?php
+            // ดึงข้อมูลความสนใจจากตาราง interests
+            $interestQuery = "SELECT * FROM interests";
+            $result = $conn->query($interestQuery);
+            while ($row = $result->fetch_assoc()) {
+                // เลือก interest ที่เลือกไว้
+                $selected = (isset($_POST['interests']) && in_array($row['id'], $_POST['interests'])) ? 'selected' : '';
+                echo "<option value='{$row['id']}' $selected>{$row['interest_name']}</option>";
+            }
+            ?>
         </select>
     </div>
 </div>
