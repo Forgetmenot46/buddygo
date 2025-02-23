@@ -24,7 +24,7 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
     <nav class="sidebar-nav">
         <ul class="nav-list primary-nav">
             <li class="nav-item">
-                <a href="../pages/index.php" class="nav-link">
+                <a href="../pages/index.php" class="nav-link <?php echo isCurrentPage('index.php') ? 'active' : ''; ?>">
                     <span class="material-symbols-rounded">dashboard</span>
                     <span class="nav-label">Home</span>
                 </a>
@@ -34,26 +34,31 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
             <?php if ($isLoggedIn) : ?>
                 
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="Create_Activity.php" class="nav-link <?php echo isCurrentPage('Create_Activity.php') ? 'active' : ''; ?>">
                         <span class="material-symbols-rounded">edit_square</span>
                         <span class="nav-label">Create Activity</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="material-symbols-rounded">notifications</span>
+                    <a href="notifications.php" class="nav-link <?php echo isCurrentPage('notifications.php') ? 'active' : ''; ?>">
+                        <i class="fas fa-bell"></i>
                         <span class="nav-label">Notifications</span>
+                        <?php
+                        // นับจำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน
+                        $unread_sql = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+                        $unread_stmt = $conn->prepare($unread_sql);
+                        $unread_stmt->bind_param("i", $_SESSION['user_id']);
+                        $unread_stmt->execute();
+                        $unread_count = $unread_stmt->get_result()->fetch_assoc()['count'];
+                        if ($unread_count > 0):
+                        ?>
+                        <span class="badge bg-danger"><?php echo $unread_count; ?></span>
+                        <?php endif; ?>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="material-symbols-rounded">chat</span>
-                        <span class="nav-label">Messages</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="../pages/profile.php" class="nav-link">
-                        <span class="material-symbols-rounded">account_circle</span>
+                    <a href="profile.php" class="nav-link <?php echo isCurrentPage('profile.php') ? 'active' : ''; ?>">
+                        <span class="material-symbols-rounded">person</span>
                         <span class="nav-label">My Profile</span>
                     </a>
                 </li>
@@ -64,7 +69,7 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
         <ul class="nav-list secondary-nav">
             <?php if ($isLoggedIn) : ?>
                 <li class="nav-item">
-                    <a href="../pages/settings.php" class="nav-link">
+                    <a href="../pages/settings.php" class="nav-link <?php echo isCurrentPage('settings.php') ? 'active' : ''; ?>">
                         <span class="material-symbols-rounded">settings</span>
                         <span class="nav-label">Settings</span>
                     </a>
@@ -77,6 +82,19 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
                 </li>
             <?php endif; ?>
         </ul>
+
+        <ul class="nav-list">
+            <?php if (!$isLoggedIn): ?>
+                <li class="nav-item">
+                    <a href="login.php" class="nav-link">
+                        <span class="material-symbols-rounded">login</span>
+                        <span class="nav-label">Login</span>
+                    </a>
+                </li>
+            <?php endif; ?>
+        </ul>
+
+
     </nav>
 </aside>
 
@@ -93,8 +111,8 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="#">
-                    <span class="material-symbols-rounded">notifications</span>
+                <a class="nav-link text-white" href="notifications.php">
+                    <i class="fas fa-bell"></i>
                 </a>
             </li>
             <?php if ($isLoggedIn) : ?>
@@ -124,3 +142,49 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
         }
     }
 </script>
+
+<style>
+/* เพิ่ม CSS สำหรับ active state */
+.nav-link.active {
+    background-color: #F6F6F6 !important;
+    color: #151A2D !important;
+    border-radius: 8px;
+}
+
+.nav-link.active .material-symbols-rounded,
+.nav-link.active .fas,
+.nav-link.active .nav-label {
+    color: #151A2D !important;
+}
+
+/* เพิ่ม transition effect */
+.nav-link {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 4px;
+    height: 0;
+    background-color: #F6F6F6;
+    transition: height 0.3s ease;
+}
+
+.nav-link.active::before {
+    height: 100%;
+}
+</style>
+
+<?php
+// เพิ่มฟังก์ชันตรวจสอบหน้าปัจจุบัน
+function isCurrentPage($pageName) {
+    $currentPage = basename($_SERVER['PHP_SELF']);
+    if ($pageName === 'index.php' && $currentPage === 'index.php') {
+        return true;
+    }
+    return $currentPage === $pageName;
+}
+?>

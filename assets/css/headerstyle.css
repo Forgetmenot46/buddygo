@@ -47,15 +47,12 @@
 
 
 .sidebar-nav .nav-link {
-    color: #F6F6F6;
     display: flex;
-    gap: 12px;
-    white-space: nowrap;
-    border-radius: 8px;
     align-items: center;
-    padding: 12px 15px;
+    padding: 0.75rem 1rem;
     text-decoration: none;
-    transition: 0.4s ease;
+    color: #F6F6F6;
+    transition: all 0.2s;
 }
 
 .sidebar-nav .nav-link:hover {
@@ -64,7 +61,26 @@
 }
 
 .sidebar-nav .nav-link .nav-label {
-    transition: 0.4s ease;
+    margin-left: 12px;
+    flex: 1;
+    color: #F6F6F6;
+}
+
+.sidebar-nav .nav-link .badge {
+    margin-left: auto;
+}
+
+.material-symbols-rounded,
+.fas {
+    width: 24px;
+    text-align: center;
+    color: #F6F6F6;
+}
+
+.sidebar-nav .nav-link:hover .material-symbols-rounded,
+.sidebar-nav .nav-link:hover .fas,
+.sidebar-nav .nav-link:hover .nav-label {
+    color: #151A2D;
 }
 
 .sidebar.collapsed .sidebar-nav .nav-link .nav-label {

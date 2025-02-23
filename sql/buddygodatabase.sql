@@ -66,16 +66,26 @@ CREATE TABLE `interests` (
 --
 
 INSERT INTO `interests` (`id`, `interest_name`) VALUES
-(7, 'Art'),
-(8, 'Camping'),
-(4, 'Cooking'),
-(9, 'Cycling'),
-(10, 'DIY Projects'),
-(2, 'Fitness'),
-(5, 'Hiking'),
-(6, 'Movies'),
-(1, 'Music'),
-(3, 'Photography');
+(7, 'Art (ศิลปะ)'),
+(8, 'Camping (แคมปิ้ง)'),
+(4, 'Cooking (ทำอาหาร)'),
+(9, 'Cycling (ปั่นจักรยาน)'),
+(10, 'DIY Projects (งานประดิษฐ์)'),
+(2, 'Fitness (ฟิตเนส)'),
+(5, 'Hiking (เดินป่า)'),
+(6, 'Movies (ภาพยนตร์)'),
+(1, 'Music (ดนตรี)'),
+(3, 'Photography (การถ่ายภาพ)'),
+(11, 'Travel (ท่องเที่ยว)'),
+(12, 'Sports (กีฬา)'),
+(13, 'Swimming (ว่ายน้ำ)'),
+(14, 'Reading (การอ่าน)'),
+(15, 'Gaming (เกม)'),
+(16, 'Dancing (เต้น)'),
+(17, 'Yoga (โยคะ)'),
+(18, 'Meditation (สมาธิ)'),
+(19, 'Mountain Climbing (ปีนเขา)'),
+(20, 'Diving (ดำน้ำ)');
 
 -- --------------------------------------------------------
 
@@ -173,6 +183,21 @@ INSERT INTO `user_languages` (`user_id`, `language_id`) VALUES
 (7, 4),
 (7, 5);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `image_path` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -235,45 +260,7 @@ ALTER TABLE `countriesphone`
 -- AUTO_INCREMENT for table `interests`
 --
 ALTER TABLE `interests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `languages`
---
-ALTER TABLE `languages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `users`
---
-ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`country_id`) REFERENCES `countriesphone` (`country_id`);
-
---
--- Constraints for table `user_interests`
---
-ALTER TABLE `user_interests`
-  ADD CONSTRAINT `user_interests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `user_interests_ibfk_2` FOREIGN KEY (`interest_id`) REFERENCES `interests` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `user_languages`
---
-ALTER TABLE `user_languages`
-  ADD CONSTRAINT `user_languages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `user_languages_ibfk_2` FOREIGN KEY (`language_id`) REFERENCES `languages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
