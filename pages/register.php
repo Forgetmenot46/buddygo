@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $lastname = $_POST['lastname'];
         $email = $_POST['email'];
         $password = $_POST['password'];
-        $profilePicturePath = 'assets/images/avatar.png'; // ระบุที่อยู่ของรูปภาพเริ่มต้น
+        $profilePicturePath = 'avatar.png'; // ระบุที่อยู่ของรูปภาพเริ่มต้น
         $birthdate = $_POST['birthdate'];
         $country_id = $_POST['country_id'];
         $phone_number = $_POST['phone_number'];

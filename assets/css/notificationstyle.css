@@ -1,0 +1,110 @@
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #F5F6F7;
+    --accent-color: #2ECC71;
+    --danger-color: #E74C3C;
+    --text-color: #2C3E50;
+    --border-radius: 15px;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* กล่องการแจ้งเตือน */
+.notification-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    padding: 15px;
+}
+
+.notification-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* เพิ่มลูกเล่นให้การแจ้งเตือนที่ยังไม่ได้อ่าน */
+.notification-card.unread {
+    border-left: 5px solid var(--primary-color);
+}
+
+/* ส่วนหัวของการแจ้งเตือน */
+.notification-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.notification-content {
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+/* ปุ่มที่ยอมรับหรือปฏิเสธ */
+.btn-sm {
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+.btn-success {
+    background-color: var(--accent-color);
+    border: none;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #28a745;
+}
+
+.btn-danger:hover {
+    background-color: #dc3545;
+}
+
+/* ช่องภาพโปรไฟล์ */
+.notification-card img {
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* สไตล์สำหรับ QR Code */
+.notification-image {
+    margin-top: 10px;
+}
+
+.qr-code-container img {
+    border-radius: 10px;
+    max-height: 200px;
+    object-fit: cover;
+}
+
+.empty-notifications {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: var(--secondary-color);
+    border-radius: var(--border-radius);
+}
+
+.empty-notifications i {
+    font-size: 40px;
+    color: #ccc;
+}
+
+.empty-notifications h4 {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-top: 10px;
+}
+
+.empty-notifications p {
+    color: #aaa;
+}
+
+/* สไตล์ให้กับปุ่มการแจ้งเตือน */
+.notification-badge {
+    animation: notification-pulse 2s infinite;
+}

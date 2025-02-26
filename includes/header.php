@@ -16,8 +16,8 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
 
 <!-- Sidebar -->
 <aside class="sidebar">
-    <header class="sidebar-header" >
-        <a href="../pages/index.php" class="header-logo" >
+    <header class="sidebar-header">
+        <a href="../pages/index.php" class="header-logo">
             <img id="sidebar-logo" src="../assets/images/logo3.png" style="width : 250px" alt="BuddyGo">
         </a>
     </header>
@@ -29,10 +29,10 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
                     <span class="nav-label">Home</span>
                 </a>
             </li>
-            
+
 
             <?php if ($isLoggedIn) : ?>
-                
+
                 <li class="nav-item">
                     <a href="Create_Activity.php" class="nav-link <?php echo isCurrentPage('Create_Activity.php') ? 'active' : ''; ?>">
                         <span class="material-symbols-rounded">edit_square</span>
@@ -52,7 +52,7 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
                         $unread_count = $unread_stmt->get_result()->fetch_assoc()['count'];
                         if ($unread_count > 0):
                         ?>
-                        <span class="badge bg-danger"><?php echo $unread_count; ?></span>
+                            <span class="badge bg-danger"><?php echo $unread_count; ?></span>
                         <?php endif; ?>
                     </a>
                 </li>
@@ -102,7 +102,7 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
 <nav class="navbar navbar-expand d-lg-none">
     <div class="container-fluid">
         <a href="../pages/index.php" class="header-logo">
-            <img id="mobile-logo" src="../assets/images/logo3.png" style="width : 150px"alt="BuddyGo">
+            <img id="mobile-logo" src="../assets/images/logo3.png" style="width : 150px" alt="BuddyGo">
         </a>
         <div class="navbar-nav gap-3">
             <li class="nav-item">
@@ -143,44 +143,12 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
     }
 </script>
 
-<style>
-/* เพิ่ม CSS สำหรับ active state */
-.nav-link.active {
-    background-color: #F6F6F6 !important;
-    color: #151A2D !important;
-    border-radius: 8px;
-}
 
-.nav-link.active .material-symbols-rounded,
-.nav-link.active .fas,
-.nav-link.active .nav-label {
-    color: #151A2D !important;
-}
-
-/* เพิ่ม transition effect */
-.nav-link {
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.nav-link::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    width: 4px;
-    height: 0;
-    background-color: #F6F6F6;
-    transition: height 0.3s ease;
-}
-
-.nav-link.active::before {
-    height: 100%;
-}
-</style>
 
 <?php
 // เพิ่มฟังก์ชันตรวจสอบหน้าปัจจุบัน
-function isCurrentPage($pageName) {
+function isCurrentPage($pageName)
+{
     $currentPage = basename($_SERVER['PHP_SELF']);
     if ($pageName === 'index.php' && $currentPage === 'index.php') {
         return true;

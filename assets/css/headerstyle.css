@@ -2,23 +2,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
     font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
+/* Sidebar */
 .sidebar {
-    width: 270px;
     position: fixed;
-    margin: 16px;
-    border-radius: 16px;
     background: #151A2D;
-    height: calc(100vh - 32px);
-    transition: 0.4s ease;
+    height: 100%;
+    width: 250px; /* ขนาดปกติของ sidebar */
+    transition: width 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
+.sidebar.collapsed {
+    width: 70px; /* ลดขนาดเมื่อ collapsed */
+}
 
+/* เมื่อ sidebar ถูกหด ไอคอนและข้อความจะหายไป */
+.sidebar.collapsed .nav-label {
+    display: none;
+}
+
+.sidebar.collapsed .material-symbols-rounded,
+.sidebar.collapsed .fas {
+    width: 30px;
+}
+
+/* ส่วนหัวของ sidebar */
 .sidebar-header {
     position: sticky;
     top: 0;
@@ -30,22 +45,18 @@
     justify-content: space-between;
 }
 
-
-
-
-
-
+/* การจัดการเมนูใน sidebar */
 .sidebar-nav .nav-list {
     list-style: none;
     display: flex;
-    gap: 4px;
-    padding: 9px 15px;
     flex-direction: column;
+    gap: 10px;
+    padding: 15px 10px;
     transform: translateY(15px);
     transition: 0.4s ease;
 }
 
-
+/* ลิงก์ในเมนู */
 .sidebar-nav .nav-link {
     display: flex;
     align-items: center;
@@ -55,11 +66,13 @@
     transition: all 0.2s;
 }
 
+/* สีเมื่อ hover บนลิงก์ */
 .sidebar-nav .nav-link:hover {
     color: #151A2D;
     background: #F6F6F6;
 }
 
+/* สีไอคอนและข้อความ */
 .sidebar-nav .nav-link .nav-label {
     margin-left: 12px;
     flex: 1;
@@ -77,37 +90,14 @@
     color: #F6F6F6;
 }
 
+/* สีเมื่อ hover บนไอคอน */
 .sidebar-nav .nav-link:hover .material-symbols-rounded,
 .sidebar-nav .nav-link:hover .fas,
 .sidebar-nav .nav-link:hover .nav-label {
     color: #151A2D;
 }
 
-.sidebar.collapsed .sidebar-nav .nav-link .nav-label {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.sidebar-nav .nav-item {
-    position: relative;
-}
-
-.sidebar-nav .nav-tooltip {
-    position: absolute;
-    top: -10px;
-    opacity: 0;
-    display: none;
-    pointer-events: none;
-    left: calc(100% + 25px);
-    color: #151A2D;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: #F6F6F6;
-    white-space: nowrap;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    transition: 0s;
-}
-
+/* สำหรับ tooltip */
 .sidebar.collapsed .sidebar-nav .nav-tooltip {
     display: block;
 }
@@ -119,24 +109,57 @@
     transition: 0.4s ease;
 }
 
+/* สำหรับเมนูด้านล่างของ sidebar */
 .sidebar .secondary-nav {
     position: absolute;
     bottom: 30px;
     width: 100%;
 }
 
+/* Navbar สำหรับมุมมองมือถือ */
 .navbar {
     background-color: #151A2D;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    align-items: center;
 }
 
+/* ปรับการแสดงผลเมื่อหน้าจอเล็ก */
 @media (max-width: 1024px) {
     .sidebar {
-        display: none;
-        /* Hide sidebar on small screens */
+        display: none; /* ซ่อน sidebar ในหน้าจอเล็ก */
     }
 
     .navbar {
-        display: block;
-        /* Show navbar on small screens */
+        display: block; /* แสดง navbar ในหน้าจอเล็ก */
     }
+}
+
+/* ปุ่ม toggle สำหรับเปิด/ปิด sidebar */
+#toggleSidebar {
+    background: none;
+    border: none;
+    color: #F6F6F6;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* สำหรับ logo ใน sidebar */
+#sidebar-logo {
+    max-width: 100%;
+    height: auto;
+}
+
+/* สำหรับ logo บน navbar สำหรับมือถือ */
+#mobile-logo {
+    max-width: 100%;
+    height: auto;
+}
+
+/* สำหรับ navbar มือถือ */
+.navbar-nav {
+    display: flex;
+    gap: 15px;
 }
