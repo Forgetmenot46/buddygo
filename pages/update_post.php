@@ -30,16 +30,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                           activity_date = ?, 
                           activity_time = ?, 
                           max_members = ?, 
+                          post_location = ?, 
                           updated_at = NOW() 
                           WHERE post_id = ?";
             
             $update_stmt = $conn->prepare($update_sql);
-            $update_stmt->bind_param("ssssii", 
+            $update_stmt->bind_param("ssssiii", 
                 $_POST['title'],
                 $_POST['description'],
                 $_POST['activity_date'],
                 $_POST['activity_time'],
                 $_POST['max_members'],
+                $_POST['post_location'],
                 $post_id
             );
             $update_stmt->execute();

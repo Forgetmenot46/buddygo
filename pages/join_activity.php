@@ -18,9 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $user_id = $_SESSION['user_id'];
 
     // เช็คว่าเป็นสมาชิกอยู่แล้วหรือไม่
-    $check_sql = "SELECT * FROM post_members WHERE post_id = ? AND user_id = ?";
+    $check_sql = "SELECT * FROM post_members WHERE post_id = ? AND user_id = ? AND post_location = ?";
     $check_stmt = $conn->prepare($check_sql);
-    $check_stmt->bind_param("ii", $post_id, $user_id);
+    $check_stmt->bind_param("iii", $post_id, $user_id, $post_location);
     $check_stmt->execute();
     $result = $check_stmt->get_result();
 

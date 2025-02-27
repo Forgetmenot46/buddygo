@@ -32,7 +32,7 @@ $posts_sql = "SELECT p.*, u.username, u.profile_picture,
     LEFT JOIN post_interests pi ON p.post_id = pi.post_id
     LEFT JOIN interests i ON pi.interest_id = i.id
     LEFT JOIN post_members pm ON p.post_id = pm.post_id AND pm.user_id = ?
-    WHERE p.status = 'active' AND p.activity_date >= CURDATE()
+    WHERE p.status = 'active' 
     GROUP BY p.post_id
     ORDER BY p.created_at DESC";
 
@@ -52,6 +52,7 @@ $posts_result = $posts_stmt->get_result();
     <title>BuddyGo - หน้าแรก</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/profilestyle.css" rel="stylesheet">
 </head>
 <style>
     body,
@@ -81,7 +82,7 @@ $posts_result = $posts_stmt->get_result();
         </div>
 
         <!-- คอลัมน์กลาง (โพสต์กิจกรรม) -->
-        <div class="col-12 col-md-6 offset-md-1"> <!-- เพิ่ม offset-lg-1 เพื่อเว้นระยะจาก sidebar -->
+        <div class="col-12 col-md-6 offset-md-1 mt-5"> <!-- เพิ่ม offset-lg-1 เพื่อเว้นระยะจาก sidebar -->
             <div class="mb-4 mt-3 ">
                 <a href="Create_Activity.php" class="btn btn-primary justify-content-center w-100">
                     <i class="fas fa-plus me-2"></i>สร้างกิจกรรมใหม่
@@ -143,13 +144,30 @@ $posts_result = $posts_stmt->get_result();
                             <!-- รายละเอียดโพสต์ -->
                             <p class="card-text"><?php echo htmlspecialchars($post['description']); ?></p>
                             <p class="card-text">
-                                <small class="text-muted">วันที่จัดกิจกรรม: <?php echo $post['activity_date']; ?> เวลา: <?php echo $post['activity_time']; ?></small>
+                                <small class="text-muted">วันที่จัดกิจกรรม: <strong><?php echo $post['activity_date']; ?></strong></small>
+                            </p>
+                            <p class="card-text">
+                                <small class="text-muted">สถานที่: <strong><?php echo htmlspecialchars($post['post_local']); ?></strong></small>
                             </p>
 
-                            <!-- ปุ่มสำหรับไปยังรายละเอียดโพสต์ -->
-                            <div class="d-flex justify-content-end">
-                                <a href="post_detail.php?post_id=<?php echo $post['post_id']; ?>" class="btn btn-primary btn-sm">ดูรายละเอียด</a>
-                            </div>
+                            <!-- แสดงแท็กกิจกรรม -->
+                            <p class="card-text">
+                                <small class="text-muted">กิจกรรม:
+                                    <div class="interest-tags" >
+                                        <?php
+                                        if (!empty($post['interests'])) {
+                                            // แยกกิจกรรมที่มีหลายรายการออกมา
+                                            $interests_array = explode(',', $post['interests']);
+                                            foreach ($interests_array as $interest) {
+                                                echo '<span class="custom-badge">' . htmlspecialchars($interest) . '</span> ';
+                                            }
+                                        } else {
+                                            echo "ไม่มี";
+                                        }
+                                        ?>
+                                    </div>
+                                </small>
+                            </p>
                         </div>
                     </div>
                 <?php endwhile; ?>
@@ -157,7 +175,7 @@ $posts_result = $posts_stmt->get_result();
         </div>
 
         <!-- คอลัมน์ขวา (กิจกรรมยอดนิยม) -->
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-3 mt-5">
             <div class="card mt-3" style="margin-right: 10px; margin-left: 10px;">
                 <div class="card-header bg-success text-white">
                     <i class="fas fa-fire me-2"></i> กิจกรรมยอดนิยม
@@ -197,8 +215,8 @@ $posts_result = $posts_stmt->get_result();
         <?php endif; ?>
     </script>
 
-    <?php include '../includes/footer.php'; ?>
 
+    <footer><?php include '../includes/footer.php'; ?></footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

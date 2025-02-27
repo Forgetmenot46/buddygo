@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['post_id'])) {
             }
 
             // ลบข้อมูลที่เกี่ยวข้อง
-            $tables = ['post_members', 'post_interests', 'notifications'];
+            $tables = ['post_members', 'post_interests', 'notifications', 'post_locations'];
             foreach ($tables as $table) {
                 $delete_sql = "DELETE FROM $table WHERE post_id = ?";
                 $delete_stmt = $conn->prepare($delete_sql);

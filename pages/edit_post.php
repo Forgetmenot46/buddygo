@@ -38,11 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         // อัพเดตข้อมูลโพสต์
         $update_sql = "UPDATE community_posts SET 
-                      title = ?, description = ?, activity_date = ?, 
-                      activity_time = ?, max_members = ?, updated_at = NOW() 
+                      title = ?, 
+                      description = ?, 
+                      activity_date = ?, 
+                      activity_time = ?, 
+                      max_members = ?, 
+                      post_location = ?, 
+                      updated_at = NOW() 
                       WHERE post_id = ?";
         $update_stmt = $conn->prepare($update_sql);
-        $update_stmt->bind_param("ssssii", $title, $description, $activity_date, 
+        $update_stmt->bind_param("ssssiii", $title, $description, $activity_date, 
                                 $activity_time, $max_members, $post_id);
         $update_stmt->execute();
 

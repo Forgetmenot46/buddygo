@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
             $update_sql = "UPDATE users SET password = ? WHERE id = ?";
             $update_stmt = $conn->prepare($update_sql);
             $update_stmt->bind_param("si", $hashed_password, $user_id);
-            
+
             if ($update_stmt->execute()) {
                 $_SESSION['alert'] = [
                     'type' => 'success',
@@ -59,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
 
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,10 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
             max-width: 600px;
             margin: 0 auto;
         }
+
         .version-info {
             font-size: 0.875rem;
             color: #6c757d;
         }
+
         .copyright {
             text-align: center;
             padding: 20px 0;
@@ -82,9 +85,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
         }
     </style>
 </head>
-<body>
-    <?php include '../includes/header.php'; ?>
 
+<body>
+
+    <div class="row">
+        <div class="col-4"><?php include '../includes/header.php'; ?></div>
+    </div>
     <div class="container mt-4">
         <div class="settings-card">
             <h2 class="mb-4">
@@ -136,17 +142,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
                 </div>
             </div>
 
-            <div class="version-info text-center mb-3">
-                BuddyGo Version 1.0.0
-            </div>
-
-            <div class="copyright">
-                &copy; <?php echo date('Y'); ?> BuddyGo. All rights reserved.
-            </div>
+           
         </div>
     </div>
 
     <?php include '../includes/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

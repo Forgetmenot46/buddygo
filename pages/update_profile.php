@@ -100,6 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
+        // ตรวจสอบ post_location
+        if (isset($_POST['post_location'])) {
+            // การจัดการ post_location
+        }
+
         $conn->commit();
         $_SESSION['alert'] = [
             'type' => 'success',

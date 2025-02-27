@@ -9,82 +9,46 @@ if (!isLoggedIn()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $user_id = $_SESSION['user_id'];
+    // รับข้อมูลจากฟอร์ม
     $title = $_POST['title'];
     $description = $_POST['description'];
+    $user_id = $_SESSION['user_id'];  // สมมติว่าผู้ใช้ล็อกอินแล้ว
     $activity_date = $_POST['activity_date'];
-    $activity_time = $_POST['activity_time'];
-    $max_members = $_POST['max_members'];
-    $interests = isset($_POST['interests']) ? $_POST['interests'] : [];
+    $post_local = $_POST['post_local'];
 
-    // จัดการอัพโหลดรูปภาพ
-    $image_path = null;
-    if (isset($_FILES['activity_image']) && $_FILES['activity_image']['error'] == 0) {
-        $upload_dir = "../uploads/activity_images/";
-        if (!file_exists($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
-        }
+    // แทรกข้อมูลโพสต์ลงในตาราง community_posts
+    $sql = "INSERT INTO community_posts (title, description, user_id, activity_date, created_at, updated_at, post_local) 
+            VALUES (?, ?, ?, ?, NOW(), NOW(), ?)";
 
-        $file_extension = strtolower(pathinfo($_FILES['activity_image']['name'], PATHINFO_EXTENSION));
-        $new_filename = uniqid() . '.' . $file_extension;
-        $upload_path = $upload_dir . $new_filename;
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('ssiss', $title, $description, $user_id, $activity_date, $post_local);
+    $result = $stmt->execute();
 
-        if (move_uploaded_file($_FILES['activity_image']['tmp_name'], $upload_path)) {
-            $image_path = $new_filename;
-        }
+    if (!$result) {
+        echo "Error: " . $stmt->error; // แสดงข้อผิดพลาดหากมี
     }
 
-    try {
-        // เริ่ม transaction
-        $conn->begin_transaction();
+    // รับ post_id ของโพสต์ที่เพิ่งถูกแทรก
+    $post_id = $conn->insert_id;
 
-        // เพิ่มโพสต์
-        $sql = "INSERT INTO community_posts (title, description, activity_date, activity_time, 
-                max_members, user_id, image_path, status, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'active', NOW())";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssiss", $title, $description, $activity_date, 
-                         $activity_time, $max_members, $user_id, $image_path);
-        $stmt->execute();
-        
-        $post_id = $conn->insert_id;
-
-        // เพิ่มคนสร้างเป็นสมาชิกอัตโนมัติ
-        $join_sql = "INSERT INTO post_members (post_id, user_id, status) VALUES (?, ?, 'joined')";
-        $join_stmt = $conn->prepare($join_sql);
-        $join_stmt->bind_param("ii", $post_id, $user_id);
-        $join_stmt->execute();
-
-        // เพิ่ม interests
-        if (!empty($interests)) {
-            $interest_sql = "INSERT INTO post_interests (post_id, interest_id) VALUES (?, ?)";
-            $interest_stmt = $conn->prepare($interest_sql);
-            foreach ($interests as $interest_id) {
-                $interest_stmt->bind_param("ii", $post_id, $interest_id);
-                $interest_stmt->execute();
+    // แทรกข้อมูลกิจกรรมที่เลือกลงในตาราง post_interests
+    if (isset($_POST['interests'])) {  // ตรวจสอบว่ามีการเลือกความสนใจหรือไม่
+        foreach ($_POST['interests'] as $interest_id) {
+            $sql = "INSERT INTO post_interests (post_id, interest_id) 
+                    VALUES (?, ?)";
+            $interest_stmt = $conn->prepare($sql);
+            $interest_stmt->bind_param('ii', $post_id, $interest_id);
+            if (!$interest_stmt->execute()) {
+                echo "Error: " . $interest_stmt->error; // แสดงข้อผิดพลาดหากมี
             }
         }
-
-        $conn->commit();
-        $_SESSION['alert'] = [
-            'type' => 'success',
-            'message' => 'สร้างกิจกรรมสำเร็จ'
-        ];
-        header('Location: index.php');
-        exit();
-
-    } catch (Exception $e) {
-        $conn->rollback();
-        // ลบรูปภาพที่อัพโหลดถ้ามีข้อผิดพลาด
-        if ($image_path && file_exists($upload_path)) {
-            unlink($upload_path);
-        }
-        $_SESSION['alert'] = [
-            'type' => 'danger',
-            'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()
-        ];
-        header('Location: Create_Activity.php');
-        exit();
     }
+
+    // เพิ่มข้อความแจ้งเตือนหรือดำเนินการต่อหลังจากบันทึกเสร็จ
+    $_SESSION['alert'] = [
+        'type' => 'success',
+        'message' => 'โพสต์และกิจกรรมถูกสร้างเรียบร้อยแล้ว!'
+    ];
+    header("Location: index.php");  // เปลี่ยนไปที่หน้าหลังการสร้างโพสต์
+    exit();
 }
-?> 
