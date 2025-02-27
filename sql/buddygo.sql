@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 27, 2025 at 09:01 AM
+-- Generation Time: Feb 27, 2025 at 09:28 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -54,21 +54,27 @@ CREATE TABLE `community_posts` (
   `current_members` int(11) DEFAULT 1,
   `activity_date` date DEFAULT NULL,
   `activity_time` time DEFAULT NULL,
-  `image_path` varchar(255) DEFAULT NULL
+  `image_path` varchar(255) DEFAULT NULL,
+  `post_local` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `community_posts`
 --
 
-INSERT INTO `community_posts` (`post_id`, `title`, `description`, `user_id`, `created_at`, `updated_at`, `status`, `max_members`, `current_members`, `activity_date`, `activity_time`, `image_path`) VALUES
-(35, 'Gundum ไปต่อกัน!!!', 'ไปประกอบกันดั้มที่ใหญ่ที่สุดในเขตรังสิต', 17, '2025-02-27 07:39:38', '2025-02-27 07:59:29', 'active', 8, 1, '2025-03-01', '19:43:00', '67c016ba6b50f.jpg'),
-(36, 'Gundum ไปต่อกัน!!!', 'ไหกไฟหกไฟ', 17, '2025-02-27 07:42:16', '2025-02-27 07:59:33', 'active', 11, 1, '2025-02-27', '19:47:00', '67c01758e663a.jpg'),
-(37, 'Gundum ไปต่อกัน!!!', 'ไปหฟหกไฟ', 17, '2025-02-27 07:46:58', '2025-02-27 07:46:58', 'active', 4, 1, '2025-02-28', '18:47:00', '67c01872b03d5.jpg'),
-(38, 'wsdasd', 'sdadsadsadsad', 17, '2025-02-27 07:52:56', '2025-02-27 07:52:56', 'active', 2, 1, '2025-02-05', '06:55:00', '67c019d80e4e1.png'),
-(39, 'ไป the rubb', 'ไปรังสิคค้าาาาาาาาาาาาาาาาา', 17, '2025-02-27 07:55:37', '2025-02-27 07:55:37', 'active', 5, 1, '2025-03-21', '07:59:00', '67c01a79079f0.jpg'),
-(40, 'ไป the rubb', 'asdasdasdasdasdasd', 17, '2025-02-27 07:57:04', '2025-02-27 07:57:04', 'active', 2, 1, '2025-03-01', '19:59:00', '67c01ad09416c.jpg'),
-(41, 'ไป the rubb', 'ไป the rubbไกดเัรน', 17, '2025-02-27 07:58:42', '2025-02-27 07:58:42', 'active', 2, 1, '2025-02-28', '19:02:00', '67c01b32a545a.jpg');
+INSERT INTO `community_posts` (`post_id`, `title`, `description`, `user_id`, `created_at`, `updated_at`, `status`, `max_members`, `current_members`, `activity_date`, `activity_time`, `image_path`, `post_local`) VALUES
+(35, 'Gundum ไปต่อกัน!!!', 'ไปประกอบกันดั้มที่ใหญ่ที่สุดในเขตรังสิต', 17, '2025-02-27 07:39:38', '2025-02-27 07:59:29', 'active', 8, 1, '2025-03-01', '19:43:00', '67c016ba6b50f.jpg', ''),
+(36, 'Gundum ไปต่อกัน!!!', 'ไหกไฟหกไฟ', 17, '2025-02-27 07:42:16', '2025-02-27 07:59:33', 'active', 11, 1, '2025-02-27', '19:47:00', '67c01758e663a.jpg', ''),
+(37, 'Gundum ไปต่อกัน!!!', 'ไปหฟหกไฟ', 17, '2025-02-27 07:46:58', '2025-02-27 07:46:58', 'active', 4, 1, '2025-02-28', '18:47:00', '67c01872b03d5.jpg', ''),
+(38, 'wsdasd', 'sdadsadsadsad', 17, '2025-02-27 07:52:56', '2025-02-27 07:52:56', 'active', 2, 1, '2025-02-05', '06:55:00', '67c019d80e4e1.png', ''),
+(39, 'ไป the rubb', 'ไปรังสิคค้าาาาาาาาาาาาาาาาา', 17, '2025-02-27 07:55:37', '2025-02-27 07:55:37', 'active', 5, 1, '2025-03-21', '07:59:00', '67c01a79079f0.jpg', ''),
+(40, 'ไป the rubb', 'asdasdasdasdasdasd', 17, '2025-02-27 07:57:04', '2025-02-27 07:57:04', 'active', 2, 1, '2025-03-01', '19:59:00', '67c01ad09416c.jpg', ''),
+(41, 'ไป the rubb', 'ไป the rubbไกดเัรน', 17, '2025-02-27 07:58:42', '2025-02-27 07:58:42', 'active', 2, 1, '2025-02-28', '19:02:00', '67c01b32a545a.jpg', ''),
+(42, 'ไป the rubb', 'asdsasddsa', 17, '2025-02-27 08:10:12', '2025-02-27 08:10:12', 'active', 0, 1, '2025-02-28', NULL, NULL, 'The Hub รังสิตฟหก'),
+(43, 'ไป the rubb', 'asdsasddsa', 17, '2025-02-27 08:11:36', '2025-02-27 08:11:36', 'active', 0, 1, '2025-02-28', NULL, NULL, 'The Hub รังสิตฟหก'),
+(44, 'ไป the rubb', 'ฟหกฟหกฟหกฟห', 17, '2025-02-27 08:12:04', '2025-02-27 08:12:04', 'active', 0, 1, '2025-02-28', NULL, NULL, 'The Hub รังสิตฟหก'),
+(45, 'ไป the rubb', 'ฟหกฟหกฟหกฟห', 17, '2025-02-27 08:13:02', '2025-02-27 08:13:02', 'active', 0, 1, '2025-02-28', NULL, NULL, 'The Hub รังสิตฟหก'),
+(46, 'ไป the rubb', 'asdasdas', 17, '2025-02-27 08:13:37', '2025-02-27 08:13:37', 'active', 0, 1, '2025-02-27', NULL, NULL, 'The Hub รังสิตฟหก');
 
 -- --------------------------------------------------------
 
@@ -234,7 +240,24 @@ INSERT INTO `post_interests` (`id`, `post_id`, `interest_id`, `created_at`) VALU
 (147, 40, 18, '2025-02-27 07:57:04'),
 (148, 40, 13, '2025-02-27 07:57:04'),
 (149, 41, 4, '2025-02-27 07:58:42'),
-(150, 41, 18, '2025-02-27 07:58:42');
+(150, 41, 18, '2025-02-27 07:58:42'),
+(151, 43, 8, '2025-02-27 08:11:36'),
+(152, 43, 5, '2025-02-27 08:11:36'),
+(153, 44, 18, '2025-02-27 08:12:04'),
+(154, 44, 19, '2025-02-27 08:12:04'),
+(155, 44, 6, '2025-02-27 08:12:04'),
+(156, 44, 13, '2025-02-27 08:12:04'),
+(157, 44, 11, '2025-02-27 08:12:04'),
+(158, 45, 18, '2025-02-27 08:13:02'),
+(159, 45, 19, '2025-02-27 08:13:02'),
+(160, 45, 6, '2025-02-27 08:13:02'),
+(161, 45, 13, '2025-02-27 08:13:02'),
+(162, 45, 11, '2025-02-27 08:13:02'),
+(163, 46, 4, '2025-02-27 08:13:37'),
+(164, 46, 9, '2025-02-27 08:13:37'),
+(165, 46, 20, '2025-02-27 08:13:37'),
+(166, 46, 18, '2025-02-27 08:13:37'),
+(167, 46, 6, '2025-02-27 08:13:37');
 
 -- --------------------------------------------------------
 
@@ -470,7 +493,7 @@ ALTER TABLE `user_languages`
 -- AUTO_INCREMENT for table `community_posts`
 --
 ALTER TABLE `community_posts`
-  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `countriesphone`
@@ -506,7 +529,7 @@ ALTER TABLE `post_comments`
 -- AUTO_INCREMENT for table `post_interests`
 --
 ALTER TABLE `post_interests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=151;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;
 
 --
 -- AUTO_INCREMENT for table `system_images`
