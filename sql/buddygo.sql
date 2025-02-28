@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 27, 2025 at 09:28 AM
+-- Generation Time: Feb 27, 2025 at 12:55 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -74,7 +74,11 @@ INSERT INTO `community_posts` (`post_id`, `title`, `description`, `user_id`, `cr
 (43, 'ไป the rubb', 'asdsasddsa', 17, '2025-02-27 08:11:36', '2025-02-27 08:11:36', 'active', 0, 1, '2025-02-28', NULL, NULL, 'The Hub รังสิตฟหก'),
 (44, 'ไป the rubb', 'ฟหกฟหกฟหกฟห', 17, '2025-02-27 08:12:04', '2025-02-27 08:12:04', 'active', 0, 1, '2025-02-28', NULL, NULL, 'The Hub รังสิตฟหก'),
 (45, 'ไป the rubb', 'ฟหกฟหกฟหกฟห', 17, '2025-02-27 08:13:02', '2025-02-27 08:13:02', 'active', 0, 1, '2025-02-28', NULL, NULL, 'The Hub รังสิตฟหก'),
-(46, 'ไป the rubb', 'asdasdas', 17, '2025-02-27 08:13:37', '2025-02-27 08:13:37', 'active', 0, 1, '2025-02-27', NULL, NULL, 'The Hub รังสิตฟหก');
+(46, 'ไป the rubb', 'asdasdas', 17, '2025-02-27 08:13:37', '2025-02-27 08:13:37', 'active', 0, 1, '2025-02-27', NULL, NULL, 'The Hub รังสิตฟหก'),
+(47, 'oooooo', ';[;[', 16, '2025-02-27 10:24:06', '2025-02-27 10:24:06', 'active', 0, 1, '2025-02-27', NULL, NULL, 'asd'),
+(48, 'หาเพื่อนไปงานขายของค่าาาาาาาา', 'ขายของค่าาาาา', 17, '2025-02-27 11:44:17', '2025-02-27 11:44:17', 'active', 0, 1, '2025-02-27', NULL, NULL, 'rangsit'),
+(49, 'หาเพื่อนไปงานขายของค่าาาาาาาา', 'ฟหกฟหกฟหกหฟก', 17, '2025-02-27 11:47:59', '2025-02-27 11:47:59', 'active', 0, 1, '2025-03-01', NULL, NULL, 'rangsit'),
+(50, 'หาเพื่อนไปงานขายของค่าาาาาาาาฟหกหฟ', 'ฟหกฟหกกฟหฟหกฟหกฟหกฟห', 17, '2025-02-27 11:49:02', '2025-02-27 11:49:02', 'active', 8, 1, '2025-03-01', '09:49:00', NULL, 'rangsit');
 
 -- --------------------------------------------------------
 
@@ -257,7 +261,18 @@ INSERT INTO `post_interests` (`id`, `post_id`, `interest_id`, `created_at`) VALU
 (164, 46, 9, '2025-02-27 08:13:37'),
 (165, 46, 20, '2025-02-27 08:13:37'),
 (166, 46, 18, '2025-02-27 08:13:37'),
-(167, 46, 6, '2025-02-27 08:13:37');
+(167, 46, 6, '2025-02-27 08:13:37'),
+(168, 47, 17, '2025-02-27 10:24:06'),
+(169, 48, 8, '2025-02-27 11:44:17'),
+(170, 48, 4, '2025-02-27 11:44:17'),
+(171, 48, 5, '2025-02-27 11:44:17'),
+(172, 49, 9, '2025-02-27 11:47:59'),
+(173, 49, 19, '2025-02-27 11:47:59'),
+(174, 50, 8, '2025-02-27 11:49:02'),
+(175, 50, 4, '2025-02-27 11:49:02'),
+(176, 50, 5, '2025-02-27 11:49:02'),
+(177, 50, 18, '2025-02-27 11:49:02'),
+(178, 50, 13, '2025-02-27 11:49:02');
 
 -- --------------------------------------------------------
 
@@ -269,7 +284,7 @@ CREATE TABLE `post_members` (
   `post_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `joined_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('pending','joined','interested','left','rejected') DEFAULT 'pending'
+  `status` enum('interested','confirmed','cancelled') NOT NULL DEFAULT 'interested'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -277,13 +292,13 @@ CREATE TABLE `post_members` (
 --
 
 INSERT INTO `post_members` (`post_id`, `user_id`, `joined_at`, `status`) VALUES
-(35, 17, '2025-02-27 07:39:38', 'joined'),
-(36, 17, '2025-02-27 07:42:16', 'joined'),
-(37, 17, '2025-02-27 07:46:58', 'joined'),
-(38, 17, '2025-02-27 07:52:56', 'joined'),
-(39, 17, '2025-02-27 07:55:37', 'joined'),
-(40, 17, '2025-02-27 07:57:04', 'joined'),
-(41, 17, '2025-02-27 07:58:42', 'joined');
+(35, 17, '2025-02-27 07:39:38', 'confirmed'),
+(36, 17, '2025-02-27 07:42:16', 'confirmed'),
+(37, 17, '2025-02-27 07:46:58', 'confirmed'),
+(38, 17, '2025-02-27 07:52:56', 'confirmed'),
+(39, 17, '2025-02-27 07:55:37', 'confirmed'),
+(40, 17, '2025-02-27 07:57:04', 'confirmed'),
+(41, 17, '2025-02-27 07:58:42', 'confirmed');
 
 -- --------------------------------------------------------
 
@@ -493,7 +508,7 @@ ALTER TABLE `user_languages`
 -- AUTO_INCREMENT for table `community_posts`
 --
 ALTER TABLE `community_posts`
-  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT for table `countriesphone`
@@ -529,7 +544,7 @@ ALTER TABLE `post_comments`
 -- AUTO_INCREMENT for table `post_interests`
 --
 ALTER TABLE `post_interests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=179;
 
 --
 -- AUTO_INCREMENT for table `system_images`

@@ -53,13 +53,38 @@ $posts_result = $posts_stmt->get_result();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/profilestyle.css" rel="stylesheet">
+    <style>
+        body,
+        html {
+            overflow-x: hidden;
+        }
+        .dropdown-menu {
+            min-width: 200px;
+            z-index: 1021;
+        }
+        .dropdown-toggle::after {
+            display: none;
+        }
+        .post-actions {
+            position: relative;
+            z-index: 1020;
+        }
+        .card {
+            position: relative;
+        }
+        .dropdown-item {
+            cursor: pointer;
+        }
+        .btn-link {
+            text-decoration: none;
+        }
+        /* ทำให้ dropdown menu อยู่ด้านขวาของปุ่ม */
+        .dropdown-menu-end {
+            right: 0;
+            left: auto;
+        }
+    </style>
 </head>
-<style>
-    body,
-    html {
-        overflow-x: hidden;
-    }
-</style>
 
 <body>
     <?php
@@ -83,7 +108,7 @@ $posts_result = $posts_stmt->get_result();
 
         <!-- คอลัมน์กลาง (โพสต์กิจกรรม) -->
         <div class="col-12 col-md-6 offset-md-1 mt-5"> <!-- เพิ่ม offset-lg-1 เพื่อเว้นระยะจาก sidebar -->
-            <div class="mb-4 mt-3 ">
+            <div class="d-flex justify-content-between mb-4 mt-3"> <!-- ใช้ d-flex เพื่อให้ในแถวเดียวกัน -->
                 <a href="Create_Activity.php" class="btn btn-primary justify-content-center w-100">
                     <i class="fas fa-plus me-2"></i>สร้างกิจกรรมใหม่
                 </a>
@@ -108,37 +133,34 @@ $posts_result = $posts_stmt->get_result();
                                     </div>
                                 </div>
 
-                                <!-- เมนูการดำเนินการ (ถ้าเป็นผู้โพสต์) -->
-                                <?php if ($post['user_id'] == $_SESSION['user_id']): ?>
-                                    <div class="dropdown" onclick="event.stopPropagation();">
-                                        <button class="btn btn-link text-dark" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <?php
-                                                $post_data = [
-                                                    'post_id' => $post['post_id'],
-                                                    'title' => $post['title'],
-                                                    'description' => $post['description'],
-                                                    'activity_date' => $post['activity_date'],
-                                                    'activity_time' => $post['activity_time'],
-                                                    'max_members' => $post['max_members']
-                                                ];
-                                                ?>
-                                                <a class="dropdown-item" href="#" onclick="editPost(<?php echo htmlspecialchars(json_encode($post_data)); ?>)">
-                                                    <i class="fas fa-edit me-2"></i>แก้ไข
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <button class="dropdown-item text-danger"
-                                                    onclick="deletePost(<?php echo $post['post_id']; ?>)">
-                                                    <i class="fas fa-trash-alt me-2"></i>ลบ
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- เมนูการดำเนินการ (ถ้าเป็นผู้โพสต์) -->
+                                    <div class="post-actions">
+                                        <?php if ($post['user_id'] == $_SESSION['user_id']): ?>
+                                            <div class="btn-group">
+                                                <button type="button" 
+                                                        class="btn btn-link text-dark" 
+                                                        data-bs-toggle="dropdown" 
+                                                        onclick="event.stopPropagation();">
+                                                    <i class="fas fa-ellipsis-v"></i>
                                                 </button>
-                                            </li>
-                                        </ul>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item" href="edit_post.php?post_id=<?php echo $post['post_id']; ?>">
+                                                            <i class="fas fa-edit me-2"></i>แก้ไขโพสต์
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="delete_post.php?post_id=<?php echo $post['post_id']; ?>" 
+                                                           onclick="return confirm('คุณแน่ใจหรือไม่ที่จะลบโพสต์นี้?');">
+                                                            <i class="fas fa-trash-alt me-2"></i>ลบโพสต์
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
-                                <?php endif; ?>
+                                </div>
                             </div>
 
                             <!-- รายละเอียดโพสต์ -->
@@ -153,7 +175,7 @@ $posts_result = $posts_stmt->get_result();
                             <!-- แสดงแท็กกิจกรรม -->
                             <p class="card-text">
                                 <small class="text-muted">กิจกรรม:
-                                    <div class="interest-tags" >
+                                    <div class="interest-tags">
                                         <?php
                                         if (!empty($post['interests'])) {
                                             // แยกกิจกรรมที่มีหลายรายการออกมา
@@ -168,45 +190,14 @@ $posts_result = $posts_stmt->get_result();
                                     </div>
                                 </small>
                             </p>
+
                         </div>
                     </div>
                 <?php endwhile; ?>
             <?php endif; ?>
         </div>
 
-        <!-- คอลัมน์ขวา (กิจกรรมยอดนิยม) -->
-        <div class="col-12 col-md-3 mt-5">
-            <div class="card mt-3" style="margin-right: 10px; margin-left: 10px;">
-                <div class="card-header bg-success text-white">
-                    <i class="fas fa-fire me-2"></i> กิจกรรมยอดนิยม
-                </div>
-                <div class="card-body">
-                    <?php
-                    $popular_posts_sql = "SELECT p.title, COUNT(pm.user_id) as member_count 
-                                      FROM community_posts p 
-                                      JOIN post_members pm ON p.post_id = pm.post_id 
-                                      WHERE pm.status = 'joined' 
-                                      GROUP BY p.post_id 
-                                      ORDER BY member_count DESC 
-                                      LIMIT 5";
-                    $popular_posts = $conn->query($popular_posts_sql);
-
-                    if ($popular_posts->num_rows > 0) {
-                        while ($post = $popular_posts->fetch_assoc()) {
-                            echo '<div class="mb-2">';
-                            echo '<div>' . htmlspecialchars($post['title']) . '</div>';
-                            echo '<small class="text-muted">' . $post['member_count'] . ' คนเข้าร่วม</small>';
-                            echo '</div>';
-                        }
-                    } else {
-                        echo '<p class="text-muted">ยังไม่มีกิจกรรมยอดนิยม</p>';
-                    }
-                    ?>
-                </div>
-            </div>
-        </div>
     </div>
-
 
     <script>
         <?php if (isset($_SESSION['alert'])): ?>
@@ -215,9 +206,58 @@ $posts_result = $posts_stmt->get_result();
         <?php endif; ?>
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    function deletePost(event, postId) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        if (confirm('คุณแน่ใจหรือไม่ที่จะลบโพสต์นี้?')) {
+            fetch('delete_post.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'post_id=' + postId
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'เกิดข้อผิดพลาดในการลบโพสต์');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการลบโพสต์');
+            });
+        }
+    }
+
+    // เพิ่ม event listener เมื่อ document โหลดเสร็จ
+    document.addEventListener('DOMContentLoaded', function() {
+        // ป้องกันการ redirect เมื่อคลิกที่ dropdown
+        const cards = document.querySelectorAll('.card[style*="cursor: pointer"]');
+        cards.forEach(card => {
+            const actions = card.querySelector('.post-actions');
+            if (actions) {
+                actions.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+
+        // ทำให้ dropdown ทำงานได้
+        var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
+        var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+            return new bootstrap.Dropdown(dropdownToggleEl)
+        });
+    });
+    </script>
 
     <footer><?php include '../includes/footer.php'; ?></footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 

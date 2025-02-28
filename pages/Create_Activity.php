@@ -48,8 +48,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'type' => 'success',
         'message' => 'โพสต์และกิจกรรมถูกสร้างเรียบร้อยแล้ว!'
     ];
-    header("Location: community_posts.php");  // เปลี่ยนไปที่หน้าหลังการสร้างโพสต์
-    exit();
+
+    // หลังจากสร้างโพสต์สำเร็จ ให้เพิ่มผู้สร้างเป็นผู้เข้าร่วมอัตโนมัติ
+    if ($stmt->execute()) {
+        $post_id = $conn->insert_id; // รับ ID ของโพสต์ที่เพิ่งสร้าง
+        
+        // เพิ่มผู้สร้างเป็นผู้เข้าร่วมอัตโนมัติ
+        $join_sql = "INSERT INTO post_members (post_id, user_id, status) VALUES (?, ?, 'confirmed')";
+        $join_stmt = $conn->prepare($join_sql);
+        $join_stmt->bind_param("ii", $post_id, $_SESSION['user_id']);
+        $join_stmt->execute();
+
+        // อัพเดทจำนวนผู้เข้าร่วมในโพสต์
+        $update_count = "UPDATE community_posts SET current_members = 1 WHERE post_id = ?";
+        $count_stmt = $conn->prepare($update_count);
+        $count_stmt->bind_param("i", $post_id);
+        $count_stmt->execute();
+
+        // บันทึก interests
+        if (!empty($selected_interests)) {
+            $interest_sql = "INSERT INTO post_interests (post_id, interest_id) VALUES (?, ?)";
+            $interest_stmt = $conn->prepare($interest_sql);
+            foreach ($selected_interests as $interest_id) {
+                $interest_stmt->bind_param("ii", $post_id, $interest_id);
+                $interest_stmt->execute();
+            }
+        }
+
+        header("Location: post_detail.php?post_id=" . $post_id);
+        exit();
+    } else {
+        $error = "เกิดข้อผิดพลาดในการสร้างกิจกรรม";
+    }
 }
 
 // ดึงรายการความสนใจทั้งหมด
