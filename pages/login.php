@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>เข้าสู่ระบบ</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
@@ -149,17 +149,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- ฟอร์ม Login ข้างขวา -->
         <div class="login-container">
-            <h2>Login</h2>
+            <h2>เข้าสู่ระบบ</h2>
             <?php if (isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
 
             <form method="POST" action="" class="mt-4">
                 <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
+                    <label for="username" class="form-label">ชื่อผู้ใช้งาน</label>
                     <input type="text" class="form-control" id="username" name="username" required>
                 </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">รหัสผ่าน</label>
                     <div class="password-field">
                         <input type="password" class="form-control" id="password" name="password" required>
                         
@@ -167,11 +167,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-login">Login</button>
+                    <button type="submit" class="btn btn-login">เข้าสู่ระบบ</button>
                 </div>
 
                 <div class="mt-3 text-center">
-                    <p>Don't have an account? <a href="../pages/register.php" class="btn btn-link">Register</a></p>
+                    <p>ยังไม่มีบัญชีหรอ ? <a href="../pages/register.php" class="btn btn-link">สมัครสมาชิก</a></p>
                 </div>
             </form>
         </div>

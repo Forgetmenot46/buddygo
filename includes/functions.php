@@ -4,7 +4,8 @@
 /**
  * Get user information by ID
  */
-function getUserById($conn, $user_id) {
+function getUserById($conn, $user_id)
+{
     $sql = "SELECT * FROM users WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $user_id);
@@ -15,7 +16,8 @@ function getUserById($conn, $user_id) {
 /**
  * Check if user has already joined a post
  */
-function hasUserJoinedPost($conn, $post_id, $user_id) {
+function hasUserJoinedPost($conn, $post_id, $user_id)
+{
     $sql = "SELECT * FROM post_members WHERE post_id = ? AND user_id = ? AND status = 'joined'";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $post_id, $user_id);
@@ -26,7 +28,8 @@ function hasUserJoinedPost($conn, $post_id, $user_id) {
 /**
  * Get current member count for a post
  */
-function getPostMemberCount($conn, $post_id) {
+function getPostMemberCount($conn, $post_id)
+{
     $sql = "SELECT COUNT(*) as count FROM post_members WHERE post_id = ? AND status = 'joined'";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $post_id);
@@ -38,7 +41,8 @@ function getPostMemberCount($conn, $post_id) {
 /**
  * Add comment to a post
  */
-function addComment($conn, $post_id, $user_id, $comment) {
+function addComment($conn, $post_id, $user_id, $comment)
+{
     $sql = "INSERT INTO post_comments (post_id, user_id, comment) VALUES (?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("iis", $post_id, $user_id, $comment);
@@ -48,7 +52,8 @@ function addComment($conn, $post_id, $user_id, $comment) {
 /**
  * Get all comments for a post
  */
-function getPostComments($conn, $post_id) {
+function getPostComments($conn, $post_id)
+{
     $sql = "SELECT c.*, u.username 
             FROM post_comments c 
             JOIN users u ON c.user_id = u.user_id 
@@ -63,7 +68,8 @@ function getPostComments($conn, $post_id) {
 /**
  * Format date to Thai format
  */
-function formatThaiDate($date) {
+function formatThaiDate($date)
+{
     $thai_months = [
         1 => 'มกราคม',
         2 => 'กุมภาพันธ์',
@@ -78,19 +84,20 @@ function formatThaiDate($date) {
         11 => 'พฤศจิกายน',
         12 => 'ธันวาคม'
     ];
-    
+
     $timestamp = strtotime($date);
     $day = date('j', $timestamp);
     $month = $thai_months[(int)date('n', $timestamp)];
     $year = date('Y', $timestamp) + 543; // Convert to Buddhist year
-    
+
     return "$day $month $year";
 }
 
 /**
  * Check if post is full
  */
-function isPostFull($conn, $post_id) {
+function isPostFull($conn, $post_id)
+{
     $sql = "SELECT p.max_members, COUNT(pm.user_id) as current_members
             FROM community_posts p
             LEFT JOIN post_members pm ON p.post_id = pm.post_id AND pm.status = 'joined'
@@ -100,14 +107,15 @@ function isPostFull($conn, $post_id) {
     $stmt->bind_param("i", $post_id);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();
-    
+
     return $result && $result['current_members'] >= $result['max_members'];
 }
 
 /**
  * Get user's joined posts
  */
-function getUserJoinedPosts($conn, $user_id) {
+function getUserJoinedPosts($conn, $user_id)
+{
     $sql = "SELECT p.*, u.username as creator_name,
             (SELECT COUNT(*) FROM post_members WHERE post_id = p.post_id AND status = 'joined') as current_members
             FROM community_posts p
@@ -124,7 +132,8 @@ function getUserJoinedPosts($conn, $user_id) {
 /**
  * Get user's created posts
  */
-function getUserCreatedPosts($conn, $user_id) {
+function getUserCreatedPosts($conn, $user_id)
+{
     $sql = "SELECT p.*, u.username as creator_name,
             (SELECT COUNT(*) FROM post_members WHERE post_id = p.post_id AND status = 'joined') as current_members
             FROM community_posts p
@@ -140,14 +149,16 @@ function getUserCreatedPosts($conn, $user_id) {
 /**
  * Sanitize and validate input
  */
-function sanitizeInput($conn, $input) {
+function sanitizeInput($conn, $input)
+{
     return mysqli_real_escape_string($conn, trim($input));
 }
 
 /**
  * Validate date format
  */
-function isValidDate($date) {
+function isValidDate($date)
+{
     $d = DateTime::createFromFormat('Y-m-d', $date);
     return $d && $d->format('Y-m-d') === $date;
 }
@@ -155,17 +166,19 @@ function isValidDate($date) {
 /**
  * Check if travel date is in the future
  */
-function isFutureDate($date) {
+function isFutureDate($date)
+{
     return strtotime($date) > time();
 }
 
 // เพิ่มฟังก์ชันสำหรับดึงรูปโปรไฟล์
-function getProfileImage($user_id) {
+function getProfileImage($user_id)
+{
     global $conn;
-    
+
     // กำหนด path ของรูปเริ่มต้น
     $default_image = '../assets/images/default_profiles/default1.png';
-    
+
     // ถ้าไม่มี user_id ให้ใช้รูปเริ่มต้น
     if (!$user_id) {
         return $default_image;
@@ -185,7 +198,7 @@ function getProfileImage($user_id) {
                 $system_image = '../assets/images/default_profiles/' . $user['profile_picture'];
                 return file_exists($system_image) ? $system_image : $default_image;
             }
-            
+
             // กรณีเป็นรูปที่ผู้ใช้อัพโหลด
             $upload_path = '../uploads/profile_pictures/' . $user['profile_picture'];
             return file_exists($upload_path) ? $upload_path : $default_image;
@@ -199,11 +212,12 @@ function getProfileImage($user_id) {
 }
 
 // เพิ่มฟังก์ชันสำหรับแสดงเวลาแบบ relative time
-function timeAgo($timestamp) {
+function timeAgo($timestamp)
+{
     $datetime = new DateTime($timestamp);
     $now = new DateTime();
     $interval = $now->diff($datetime);
-    
+
     if ($interval->y > 0) {
         return $interval->y . ' ปีที่แล้ว';
     }
@@ -219,7 +233,38 @@ function timeAgo($timestamp) {
     if ($interval->i > 0) {
         return $interval->i . ' นาทีที่แล้ว';
     }
-    
+
     return 'เมื่อสักครู่';
 }
-?>
+
+// ฟังก์ชันสำหรับแสดงไอคอนยืนยันตัวตน
+function getVerifiedIcon($verified_status)
+{
+    if ($verified_status == 1) {
+        return ' <i class="fas fa-check-circle text-primary" title="ยืนยันตัวตนแล้ว"></i>';
+    }
+    return '';
+}
+
+function displayAd()
+{
+    $adsDir = '../assets/images/side-ads/';
+    $ads = glob($adsDir . '*.jpg'); // ดึงไฟล์ภาพทั้งหมดในโฟลเดอร์ ads
+    if (!empty($ads)) {
+        $randomAd = $ads[array_rand($ads)]; // เลือกโฆษณาแบบสุ่ม
+        echo '<div class="ad-container">';
+        echo '<img src="' . htmlspecialchars($randomAd) . '" alt="Ad" class="img-fluid">';
+        echo '</div>';
+    }
+}
+function displayAd2()
+{
+    $adsDir = '../assets/images/squre-ads/';
+    $ads = glob($adsDir . '*.jpg'); // ดึงไฟล์ภาพทั้งหมดในโฟลเดอร์ ads
+    if (!empty($ads)) {
+        $randomAd = $ads[array_rand($ads)]; // เลือกโฆษณาแบบสุ่ม
+        echo '<div class="ad-container">';
+        echo '<img src="' . htmlspecialchars($randomAd) . '" alt="Ad" class="img-fluid">';
+        echo '</div>';
+    }
+}

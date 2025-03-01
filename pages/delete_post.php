@@ -1,54 +1,69 @@
 <?php
 session_start();
 require_once '../config/config.php';
+require_once '../includes/functions.php';
 
-if (!isset($_GET['post_id'])) {
-    header('Location: index.php');
-    exit;
+// ตรวจสอบว่ามีการส่ง POST request และมี user_id
+if (!isset($_SESSION['user_id']) || !isset($_POST['post_id'])) {
+    echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ถูกต้อง']);
+    exit();
 }
 
-$post_id = $_GET['post_id'];
 $user_id = $_SESSION['user_id'];
+$post_id = $_POST['post_id'];
 
-// ตรวจสอบว่าเป็นเจ้าของโพสต์หรือไม่
-$check_sql = "SELECT user_id FROM community_posts WHERE post_id = ?";
-$check_stmt = $conn->prepare($check_sql);
+// ตรวจสอบว่าผู้ใช้เป็นเจ้าของโพสต์
+$check_owner_sql = "SELECT user_id FROM community_posts WHERE post_id = ?";
+$check_stmt = $conn->prepare($check_owner_sql);
 $check_stmt->bind_param("i", $post_id);
 $check_stmt->execute();
 $result = $check_stmt->get_result();
 $post = $result->fetch_assoc();
 
 if (!$post || $post['user_id'] != $user_id) {
-    $_SESSION['alert'] = ['type' => 'danger', 'message' => 'คุณไม่มีสิทธิ์ลบโพสต์นี้'];
-    header('Location: index.php');
-    exit;
+    echo json_encode(['success' => false, 'message' => 'คุณไม่มีสิทธิ์ลบโพสต์นี้']);
+    exit();
 }
+
+// เริ่ม transaction
+$conn->begin_transaction();
 
 try {
-    $conn->begin_transaction();
-
     // ลบข้อมูลที่เกี่ยวข้องทั้งหมด
-    $tables = ['post_members', 'post_interests', 'popular_activities'];
-    foreach ($tables as $table) {
-        $delete_sql = "DELETE FROM $table WHERE post_id = ?";
-        $delete_stmt = $conn->prepare($delete_sql);
-        $delete_stmt->bind_param("i", $post_id);
-        $delete_stmt->execute();
-    }
+    
+    // 1. ลบการแจ้งเตือนที่เกี่ยวข้อง
+    $delete_notifications = "DELETE FROM notifications WHERE post_id = ?";
+    $stmt = $conn->prepare($delete_notifications);
+    $stmt->bind_param("i", $post_id);
+    $stmt->execute();
 
-    // ลบโพสต์หลัก
-    $delete_post_sql = "DELETE FROM community_posts WHERE post_id = ?";
-    $delete_post_stmt = $conn->prepare($delete_post_sql);
-    $delete_post_stmt->bind_param("i", $post_id);
-    $delete_post_stmt->execute();
+    // 2. ลบความสนใจในโพสต์
+    $delete_interests = "DELETE FROM post_interests WHERE post_id = ?";
+    $stmt = $conn->prepare($delete_interests);
+    $stmt->bind_param("i", $post_id);
+    $stmt->execute();
 
+    // 3. ลบสมาชิกในโพสต์
+    $delete_members = "DELETE FROM post_members WHERE post_id = ?";
+    $stmt = $conn->prepare($delete_members);
+    $stmt->bind_param("i", $post_id);
+    $stmt->execute();
+
+    // 4. ลบโพสต์
+    $delete_post = "DELETE FROM community_posts WHERE post_id = ? AND user_id = ?";
+    $stmt = $conn->prepare($delete_post);
+    $stmt->bind_param("ii", $post_id, $user_id);
+    $stmt->execute();
+
+    // ยืนยัน transaction
     $conn->commit();
-    $_SESSION['alert'] = ['type' => 'success', 'message' => 'ลบโพสต์สำเร็จ'];
+    echo json_encode(['success' => true, 'message' => 'ลบโพสต์เรียบร้อยแล้ว']);
+
 } catch (Exception $e) {
+    // หากเกิดข้อผิดพลาด ให้ย้อนกลับ transaction
     $conn->rollback();
-    $_SESSION['alert'] = ['type' => 'danger', 'message' => 'เกิดข้อผิดพลาดในการลบโพสต์'];
+    echo json_encode(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการลบโพสต์: ' . $e->getMessage()]);
 }
 
-header('Location: index.php');
-exit;
-?> 
+$conn->close();
+?>

@@ -24,7 +24,7 @@ $_SESSION['username'] = $current_user['username'];
 $_SESSION['profile_picture'] = $current_user['profile_picture'];
 
 // ดึงข้อมูลโพสต์และข้อมูลที่เกี่ยวข้องทั้งหมด
-$post_sql = "SELECT p.*, u.username, u.profile_picture,
+$post_sql = "SELECT p.*, u.username as creator_name, u.verified_status as creator_verified_status,
              GROUP_CONCAT(DISTINCT i.interest_name) as interests,
              (SELECT COUNT(*) FROM post_members WHERE post_id = p.post_id AND status = 'confirmed') as current_members
              FROM community_posts p 
@@ -134,7 +134,7 @@ if ($member_status === 'confirmed') {
 }
 
 // เพิ่มฟังก์ชันตรวจสอบว่าสามารถเข้าร่วมได้หรือไม่
-function addParticipant($post_id, $user_id, $conn)
+function addParticipant($post_id, $user_id, $conn, $post)
 {
     // ตรวจสอบว่ามีข้อมูลอยู่แล้วหรือไม่
     $check_sql = "SELECT status FROM post_members WHERE post_id = ? AND user_id = ?";
@@ -155,10 +155,21 @@ function addParticipant($post_id, $user_id, $conn)
     $stmt->bind_param("ii", $post_id, $user_id);
     $success = $stmt->execute();
 
-    if ($success) {
-        // เพิ่มการอัพเดทสถิติเมื่อมีการเข้าร่วมสำเร็จ
-        updatePopularActivity($post_id, $conn);
-    }
+
+
+    return $success;
+}
+
+// ฟังก์ชันสำหรับยืนยันการเข้าร่วม
+function confirmParticipation($post_id, $user_id, $conn, $post)
+{
+    // อัพเดทสถานะการเข้าร่วม
+    $sql = "UPDATE post_members SET status = 'confirmed' WHERE post_id = ? AND user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $post_id, $user_id);
+    $success = $stmt->execute();
+
+
 
     return $success;
 }
@@ -223,7 +234,12 @@ function addParticipant($post_id, $user_id, $conn)
                                 style="width: 50px; height: 50px; object-fit: cover;">
                             <div>
                                 <h2 class="mb-0"><?php echo htmlspecialchars($post['title']); ?></h2>
-                                <small class="text-muted">โดย <?php echo htmlspecialchars($post['username']); ?></small>
+                                <small class="text-muted">โดย
+                                    <?php echo htmlspecialchars($post['creator_name']); ?>
+                                    <?php if ($post['creator_verified_status'] == 1): ?>
+                                        <i class="fas fa-check-circle text-primary" title="Verified User"></i>
+                                    <?php endif; ?>
+                                </small>
                             </div>
                         </div>
                         <div class="d-flex flex-column gap-2">
@@ -338,7 +354,7 @@ function addParticipant($post_id, $user_id, $conn)
                     <div class="mb-4">
                         <h6 class="text-warning mb-3">สนใจเข้าร่วมกิจกรรม</h6>
                         <?php
-                        $interested_sql = "SELECT u.id, u.username, u.profile_picture, pm.joined_at 
+                        $interested_sql = "SELECT u.id, u.username, u.profile_picture, u.verified_status, pm.joined_at 
                                          FROM post_members pm 
                                          JOIN users u ON pm.user_id = u.id 
                                          WHERE pm.post_id = ? AND pm.status = 'interested'
@@ -355,7 +371,12 @@ function addParticipant($post_id, $user_id, $conn)
                                     <img src="<?php echo getProfileImage($member['id']); ?>"
                                         class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
                                     <div>
-                                        <h6 class="mb-0"><?php echo htmlspecialchars($member['username']); ?></h6>
+                                        <h6 class="mb-0">
+                                            <?php echo htmlspecialchars($member['username']); ?>
+                                            <?php if ($member['verified_status'] == 1): ?>
+                                                <i class="fas fa-check-circle text-primary" title="Verified User"></i>
+                                            <?php endif; ?>
+                                        </h6>
                                         <small class="text-muted">สนใจเข้าร่วม - <?php echo date('d/m/Y H:i', strtotime($member['joined_at'])); ?></small>
                                     </div>
                                     <?php if ($member['id'] == $_SESSION['user_id']): ?>
@@ -385,7 +406,7 @@ function addParticipant($post_id, $user_id, $conn)
                     <div>
                         <h6 class="text-success mb-3">ยืนยันการเข้าร่วม</h6>
                         <?php
-                        $confirmed_sql = "SELECT u.id, u.username, u.profile_picture, pm.joined_at 
+                        $confirmed_sql = "SELECT u.id, u.username, u.profile_picture, u.verified_status, pm.joined_at 
                                         FROM post_members pm 
                                         JOIN users u ON pm.user_id = u.id 
                                         WHERE pm.post_id = ? AND pm.status = 'confirmed'
@@ -402,7 +423,12 @@ function addParticipant($post_id, $user_id, $conn)
                                     <img src="<?php echo getProfileImage($member['id']); ?>"
                                         class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
                                     <div>
-                                        <h6 class="mb-0"><?php echo htmlspecialchars($member['username']); ?></h6>
+                                        <h6 class="mb-0">
+                                            <?php echo htmlspecialchars($member['username']); ?>
+                                            <?php if ($member['verified_status'] == 1): ?>
+                                                <i class="fas fa-check-circle text-primary" title="Verified User"></i>
+                                            <?php endif; ?>
+                                        </h6>
                                         <small class="text-muted">ยืนยันเข้าร่วม - <?php echo date('d/m/Y H:i', strtotime($member['joined_at'])); ?></small>
                                     </div>
                                 </div>
@@ -417,14 +443,179 @@ function addParticipant($post_id, $user_id, $conn)
             </div>
         </div>
 
-        <?php include '../includes/footer.php'; ?>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             // กำหนดตัวแปรที่จำเป็นสำหรับ JavaScript
             const postId = <?php echo $post_id; ?>;
             const userId = <?php echo $_SESSION['user_id']; ?>;
         </script>
-        <?php include 'activity_functions.php'; ?>
+        <?php
+        include '../includes/activity_functions.php';
+
+        // ใช้ฟังก์ชันจาก activity_functions.php
+        if (isset($_POST['join_activity'])) {
+            $result = addParticipant($post_id, $user_id, $conn, $post);
+            if ($result) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'เข้าร่วมกิจกรรมสำเร็จ!'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
+                ]);
+            }
+        }
+        ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Modal handling
+                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                const confirmBtn = document.getElementById('confirmBtn');
+                const yesOption = document.getElementById('yesOption');
+                const joinButton = document.getElementById('joinButton');
+
+                // Enable/disable confirm button based on radio selection
+                yesOption.addEventListener('change', function() {
+                    confirmBtn.disabled = !this.checked;
+                });
+
+                // Join button click handler
+                if (joinButton) {
+                    joinButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        modal.show();
+                    });
+                }
+
+                // Confirm button click handler
+                confirmBtn.addEventListener('click', function() {
+                    if (yesOption.checked) {
+                        joinActivity();
+                        modal.hide();
+                    }
+                });
+
+                // Function to handle joining activity
+                function joinActivity() {
+                    fetch('join_activity.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `post_id=${postId}`
+                        })
+                        .then(response => {
+                            // เช็คว่า response เป็น JSON หรือไม่
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                return response.json().then(data => ({
+                                    ok: response.ok,
+                                    data
+                                }));
+                            }
+                            // ถ้าไม่ใช่ JSON ให้อ่านเป็น text
+                            return response.text().then(text => ({
+                                ok: response.ok,
+                                text
+                            }));
+                        })
+                        .then(result => {
+                            if (!result.ok) {
+                                throw new Error(result.data?.message || result.text || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                            }
+
+                            if (result.data) {
+                                // กรณีได้รับ JSON response
+                                if (result.data.success) {
+                                    alert('เข้าร่วมกิจกรรมสำเร็จ!');
+                                    location.reload();
+                                } else {
+                                    throw new Error(result.data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                                }
+                            } else {
+                                // กรณีได้รับ text response
+                                alert('เข้าร่วมกิจกรรมสำเร็จ!');
+                                location.reload();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert(error.message);
+
+                            // ถ้าการเข้าร่วมสำเร็จแต่มีปัญหากับ response
+                            if (error.message.includes('SyntaxError') ||
+                                error.message.includes('เกิดข้อผิดพลาดในการเชื่อมต่อ')) {
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 1500);
+                            }
+                        });
+                }
+
+                // Function to confirm join
+                window.confirmJoin = function(postId, userId) {
+                    fetch('confirm_join.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `post_id=${postId}&user_id=${userId}`
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                alert('ยืนยันการเข้าร่วมสำเร็จ!');
+                                location.reload();
+                            } else {
+                                alert(data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
+                        });
+                }
+
+                // Function to cancel join
+                window.cancelJoin = function(postId, userId) {
+                    if (confirm('คุณแน่ใจหรือไม่ที่จะยกเลิกการเข้าร่วม?')) {
+                        fetch('cancel_join.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `post_id=${postId}&user_id=${userId}`
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    alert('ยกเลิกการเข้าร่วมสำเร็จ');
+                                    location.reload();
+                                } else {
+                                    alert(data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
+                            });
+                    }
+                }
+            });
+        </script>
 </body>
 
 </html>

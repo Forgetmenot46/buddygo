@@ -114,7 +114,12 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
                                                     echo "../uploads/profile_pictures/" . ($profile_pic ?: 'default1.png');
                                                 }
                                                 ?>" class="profile-image rounded-circle" alt="Profile Picture">
-                                    <h3 class="profile-name"><?php echo htmlspecialchars($user['firstname'] . ' ' . $user['lastname']); ?></h3>
+                                    <h3 class="profile-name">
+                                        <?php echo htmlspecialchars($user['firstname'] . ' ' . $user['lastname']); ?>
+                                        <?php if ($user['verified_status'] == 1): ?>
+                                            <i class="fas fa-check-circle text-primary" title="Verified User"></i>
+                                        <?php endif; ?>
+                                    </h3>
                                     <p class="profile-username">@<?php echo htmlspecialchars($user['username']); ?></p>
                                     <div class="notifications-badge mb-3">
                                         <?php
@@ -344,7 +349,7 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
                 }
             </script>
 
-            <?php include '../includes/footer.php'; ?>
+
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
             <script>
                 function confirmChange() {
@@ -355,6 +360,483 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
 
 
     </div>
+
+    <!-- ส่วนแสดงข้อมูลสำหรับ Admin -->
+    <?php if ($user['is_admin'] == 1 || $user['role'] == 'admin'): ?>
+        <div class="container mt-4">
+            <div class="admin-dashboard">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>แผงควบคุมสำหรับผู้ดูแลระบบ</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">ภาพรวม</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="false">ผู้ใช้งาน</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab" aria-controls="posts" aria-selected="false">โพสต์</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="interests-tab" data-bs-toggle="tab" data-bs-target="#interests" type="button" role="tab" aria-controls="interests" aria-selected="false">ความสนใจ</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content p-3" id="adminTabContent">
+                            <!-- ภาพรวม -->
+                            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">สถิติผู้ใช้งาน</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="userStatsChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">สถิติโพสต์</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="postStatsChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">สรุปข้อมูลระบบ</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <?php
+                                                // ดึงข้อมูลสรุปจากฐานข้อมูล
+                                                $stats_sql = "SELECT 
+                                                (SELECT COUNT(*) FROM users) as total_users,
+                                                (SELECT COUNT(*) FROM community_posts) as total_posts,
+                                                (SELECT COUNT(*) FROM post_members) as total_participations,
+                                                (SELECT COUNT(*) FROM interests) as total_interests";
+                                                $stats_result = $conn->query($stats_sql);
+                                                $stats = $stats_result->fetch_assoc();
+                                                ?>
+                                                <div class="row">
+                                                    <div class="col-md-3 col-sm-6 mb-3">
+                                                        <div class="stats-item text-center">
+                                                            <div class="stats-icon bg-primary text-white rounded-circle mb-2">
+                                                                <i class="fas fa-users"></i>
+                                                            </div>
+                                                            <h3><?php echo $stats['total_users']; ?></h3>
+                                                            <p class="text-muted">ผู้ใช้งานทั้งหมด</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-6 mb-3">
+                                                        <div class="stats-item text-center">
+                                                            <div class="stats-icon bg-success text-white rounded-circle mb-2">
+                                                                <i class="fas fa-file-alt"></i>
+                                                            </div>
+                                                            <h3><?php echo $stats['total_posts']; ?></h3>
+                                                            <p class="text-muted">โพสต์ทั้งหมด</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-6 mb-3">
+                                                        <div class="stats-item text-center">
+                                                            <div class="stats-icon bg-info text-white rounded-circle mb-2">
+                                                                <i class="fas fa-handshake"></i>
+                                                            </div>
+                                                            <h3><?php echo $stats['total_participations']; ?></h3>
+                                                            <p class="text-muted">การเข้าร่วมทั้งหมด</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-6 mb-3">
+                                                        <div class="stats-item text-center">
+                                                            <div class="stats-icon bg-warning text-white rounded-circle mb-2">
+                                                                <i class="fas fa-tags"></i>
+                                                            </div>
+                                                            <h3><?php echo $stats['total_interests']; ?></h3>
+                                                            <p class="text-muted">ความสนใจทั้งหมด</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ผู้ใช้งาน -->
+                            <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">รายชื่อผู้ใช้งาน</h5>
+                                        <div class="input-group" style="max-width: 300px;">
+                                            <input type="text" id="userSearchInput" class="form-control" placeholder="ค้นหาผู้ใช้...">
+                                            <button class="btn btn-outline-secondary" type="button">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="usersTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>ชื่อผู้ใช้</th>
+                                                        <th>อีเมล</th>
+                                                        <th>สถานะ</th>
+                                                        <th>วันที่สมัคร</th>
+                                                        <th>เข้าสู่ระบบล่าสุด</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php
+                                                    $users_sql = "SELECT id, username, email, verified_status, created_at, last_login FROM users ORDER BY id DESC LIMIT 10";
+                                                    $users_result = $conn->query($users_sql);
+                                                    while ($user_row = $users_result->fetch_assoc()):
+                                                    ?>
+                                                        <tr>
+                                                            <td><?php echo $user_row['id']; ?></td>
+                                                            <td><?php echo htmlspecialchars($user_row['username']); ?></td>
+                                                            <td><?php echo htmlspecialchars($user_row['email']); ?></td>
+                                                            <td>
+                                                                <?php if ($user_row['verified_status'] == 1): ?>
+                                                                    <span class="badge bg-success">ยืนยันแล้ว</span>
+                                                                <?php else: ?>
+                                                                    <span class="badge bg-warning">ยังไม่ยืนยัน</span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                            <td><?php echo date('d/m/Y', strtotime($user_row['created_at'])); ?></td>
+                                                            <td><?php echo date('d/m/Y H:i', strtotime($user_row['last_login'])); ?></td>
+                                                        </tr>
+                                                    <?php endwhile; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- โพสต์ -->
+                            <div class="tab-pane fade" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">โพสต์ยอดนิยม</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>หัวข้อ</th>
+                                                        <th>ผู้โพสต์</th>
+                                                        <th>ยอดเข้าชม</th>
+                                                        <th>ผู้เข้าร่วม</th>
+                                                        <th>วันที่โพสต์</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php
+                                                    $posts_sql = "SELECT p.post_id, p.title, p.view_count, p.created_at, u.username,
+                                                            (SELECT COUNT(*) FROM post_members WHERE post_id = p.post_id AND status IN ('joined', 'confirmed')) as joined_count
+                                                            FROM community_posts p
+                                                            JOIN users u ON p.user_id = u.id
+                                                            ORDER BY p.view_count DESC
+                                                            LIMIT 10";
+                                                    $posts_result = $conn->query($posts_sql);
+                                                    while ($post_row = $posts_result->fetch_assoc()):
+                                                    ?>
+                                                        <tr>
+                                                            <td><?php echo $post_row['post_id']; ?></td>
+                                                            <td><?php echo htmlspecialchars($post_row['title']); ?></td>
+                                                            <td><?php echo htmlspecialchars($post_row['username']); ?></td>
+                                                            <td><?php echo $post_row['view_count']; ?></td>
+                                                            <td><?php echo $post_row['joined_count']; ?></td>
+                                                            <td><?php echo date('d/m/Y', strtotime($post_row['created_at'])); ?></td>
+                                                        </tr>
+                                                    <?php endwhile; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ความสนใจ -->
+                            <div class="tab-pane fade" id="interests" role="tabpanel" aria-labelledby="interests-tab">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">ความสนใจยอดนิยม</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="interestsChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0">รายการความสนใจ</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>ID</th>
+                                                                <th>ชื่อความสนใจ</th>
+                                                                <th>จำนวนผู้ใช้</th>
+                                                                <th>จำนวนโพสต์</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <?php
+                                                            $interests_sql = "SELECT i.id, i.interest_name,
+                                                                        (SELECT COUNT(*) FROM user_interests WHERE interest_id = i.id) as user_count,
+                                                                        (SELECT COUNT(*) FROM post_interests WHERE interest_id = i.id) as post_count
+                                                                        FROM interests i
+                                                                        ORDER BY user_count DESC
+                                                                        LIMIT 10";
+                                                            $interests_result = $conn->query($interests_sql);
+                                                            while ($interest_row = $interests_result->fetch_assoc()):
+                                                            ?>
+                                                                <tr>
+                                                                    <td><?php echo $interest_row['id']; ?></td>
+                                                                    <td><?php echo htmlspecialchars($interest_row['interest_name']); ?></td>
+                                                                    <td><?php echo $interest_row['user_count']; ?></td>
+                                                                    <td><?php echo $interest_row['post_count']; ?></td>
+                                                                </tr>
+                                                            <?php endwhile; ?>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- เพิ่ม CSS สำหรับ Admin Dashboard -->
+        <style>
+            .admin-dashboard {
+                margin-bottom: 30px;
+            }
+
+            .stats-icon {
+                width: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto;
+                font-size: 20px;
+            }
+
+            .stats-item h3 {
+                font-size: 24px;
+                font-weight: bold;
+                margin: 10px 0 5px;
+            }
+
+            .nav-tabs .nav-link {
+                color: #495057;
+            }
+
+            .nav-tabs .nav-link.active {
+                font-weight: bold;
+                color: #0d6efd;
+            }
+        </style>
+
+        <!-- เพิ่ม Chart.js สำหรับแสดงกราฟ -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- JavaScript สำหรับ Admin Dashboard -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // กราฟสถิติผู้ใช้งาน
+                const userCtx = document.getElementById('userStatsChart').getContext('2d');
+                const userStatsChart = new Chart(userCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+                        datasets: [{
+                            label: 'ผู้ใช้ใหม่',
+                            data: [
+                                <?php
+                                // ดึงข้อมูลผู้ใช้ใหม่รายเดือน
+                                $user_stats = [];
+                                for ($i = 1; $i <= 12; $i++) {
+                                    $month_sql = "SELECT COUNT(*) as count FROM users WHERE MONTH(created_at) = $i AND YEAR(created_at) = YEAR(CURRENT_DATE())";
+                                    $month_result = $conn->query($month_sql);
+                                    $user_stats[] = $month_result->fetch_assoc()['count'];
+                                }
+                                echo implode(',', $user_stats);
+                                ?>
+                            ],
+                            borderColor: 'rgba(13, 110, 253, 1)',
+                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'ผู้ใช้ใหม่รายเดือน'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // กราฟสถิติโพสต์
+                const postCtx = document.getElementById('postStatsChart').getContext('2d');
+                const postStatsChart = new Chart(postCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+                        datasets: [{
+                            label: 'โพสต์ใหม่',
+                            data: [
+                                <?php
+                                // ดึงข้อมูลโพสต์ใหม่รายเดือน
+                                $post_stats = [];
+                                for ($i = 1; $i <= 12; $i++) {
+                                    $month_sql = "SELECT COUNT(*) as count FROM community_posts WHERE MONTH(created_at) = $i AND YEAR(created_at) = YEAR(CURRENT_DATE())";
+                                    $month_result = $conn->query($month_sql);
+                                    $post_stats[] = $month_result->fetch_assoc()['count'];
+                                }
+                                echo implode(',', $post_stats);
+                                ?>
+                            ],
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'โพสต์ใหม่รายเดือน'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // กราฟความสนใจยอดนิยม
+                const interestsCtx = document.getElementById('interestsChart').getContext('2d');
+                const interestsChart = new Chart(interestsCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: [
+                            <?php
+                            // ดึงข้อมูลความสนใจยอดนิยม
+                            $top_interests_sql = "SELECT i.interest_name, COUNT(ui.user_id) as user_count
+                                            FROM interests i
+                                            JOIN user_interests ui ON i.id = ui.interest_id
+                                            GROUP BY i.id
+                                            ORDER BY user_count DESC
+                                            LIMIT 5";
+                            $top_interests_result = $conn->query($top_interests_sql);
+                            $interest_names = [];
+                            $interest_counts = [];
+                            while ($interest = $top_interests_result->fetch_assoc()) {
+                                $interest_names[] = "'" . htmlspecialchars($interest['interest_name']) . "'";
+                                $interest_counts[] = $interest['user_count'];
+                            }
+                            echo implode(',', $interest_names);
+                            ?>
+                        ],
+                        datasets: [{
+                            data: [<?php echo implode(',', $interest_counts); ?>],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.7)',
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(255, 206, 86, 0.7)',
+                                'rgba(75, 192, 192, 0.7)',
+                                'rgba(153, 102, 255, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                            },
+                            title: {
+                                display: true,
+                                text: 'ความสนใจยอดนิยม'
+                            }
+                        }
+                    }
+                });
+
+                // ค้นหาผู้ใช้
+                document.getElementById('userSearchInput').addEventListener('keyup', function() {
+                    const searchValue = this.value.toLowerCase();
+                    const table = document.getElementById('usersTable');
+                    const rows = table.getElementsByTagName('tr');
+
+                    for (let i = 1; i < rows.length; i++) {
+                        const username = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+                        const email = rows[i].getElementsByTagName('td')[2].textContent.toLowerCase();
+
+                        if (username.includes(searchValue) || email.includes(searchValue)) {
+                            rows[i].style.display = '';
+                        } else {
+                            rows[i].style.display = 'none';
+                        }
+                    }
+                });
+            });
+        </script>
+    <?php endif; ?>
 
 </body>
 

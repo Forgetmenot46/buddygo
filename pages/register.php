@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>สมัครสมาชิก</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <div class="container mt-5">
         <div class="form-header">
-            <h2 class="RegisterH2">Register</h2>
+            <h2 class="RegisterH2">สมัครสมาชิก</h2>
         </div>
 
         <?php if (isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
@@ -235,33 +235,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form method="POST" action="" enctype="multipart/form-data">
             <!-- ส่วนของ Username -->
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" value="<?php echo isset($_POST['username']) ? $_POST['username'] : ''; ?>" required maxlength="20" placeholder="Enter your username">
+                <label for="username" class="form-label">ชื่อผู้ใช้งาน</label>
+                <input type="text" class="form-control" id="username" name="username" value="<?php echo isset($_POST['username']) ? $_POST['username'] : ''; ?>" required maxlength="20" placeholder="กรอกชื่อผู้ใช้งานของคุณ">
             </div>
 
             <!-- ส่วนของชื่อและนามสกุล -->
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="firstname" class="form-label">First Name</label>
-                    <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo isset($_POST['firstname']) ? $_POST['firstname'] : ''; ?>" required placeholder="Enter your first name">
+                    <label for="firstname" class="form-label">ชื่อจริง</label>
+                    <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo isset($_POST['firstname']) ? $_POST['firstname'] : ''; ?>" required placeholder="กรอกชื่อจริงของคุณ">
                 </div>
                 <div class="col-md-6">
-                    <label for="lastname" class="form-label">Last Name</label>
-                    <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo isset($_POST['lastname']) ? $_POST['lastname'] : ''; ?>" required placeholder="Enter your last name">
+                    <label for="lastname" class="form-label">นามสกุล</label>
+                    <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo isset($_POST['lastname']) ? $_POST['lastname'] : ''; ?>" required placeholder="กรอกนามสกุลของคุณ">
                 </div>
             </div>
 
             <!-- ส่วนของวันเกิด -->
             <div class="mb-3">
-                <label for="birthdate" class="form-label">Birthdate</label>
-                <input type="date" class="form-control" id="birthdate" name="birthdate" value="<?php echo isset($_POST['birthdate']) ? $_POST['birthdate'] : ''; ?>" required placeholder="Select your birthdate">
+                <label for="birthdate" class="form-label">วันเดือนปีเกิด</label>
+                <input type="date" class="form-control" id="birthdate" name="birthdate" value="<?php echo isset($_POST['birthdate']) ? $_POST['birthdate'] : ''; ?>" required placeholder="เลือกวันเดือนปีเกิดของคุณ">
             </div>
 
             <!-- ส่วนของเบอร์โทรศัพท์ -->
             <div class="mb-3">
-                <label class="form-label">Phone Number</label>
+                <label class="form-label">เบอร์โทรศัพท์</label>
                 <div class="input-group">
-                    <select class="form-control" id="country_id" name="country_id" required aria-label="Select country code">
+                    <select class="form-control" id="country_id" name="country_id" required aria-label="เลือกเบอร์ประเทศ">
                         <?php
                         // ดึงข้อมูลประเทศจากตาราง countriesphone
                         $countryQuery = "SELECT * FROM countriesphone";
@@ -273,77 +273,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         }
                         ?>
                     </select>
-                    <input type="text" class="form-control" id="phone_number" name="phone_number" value="<?php echo isset($_POST['phone_number']) ? $_POST['phone_number'] : ''; ?>" required placeholder="Enter phone number" aria-label="Phone number">
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" value="<?php echo isset($_POST['phone_number']) ? $_POST['phone_number'] : ''; ?>" required placeholder="กรอกเบอร์โทรศัพท์ของคุณ" aria-label="Phone number">
                 </div>
             </div>
 
             <!-- ส่วนของอีเมล -->
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" value="<?php echo isset($_POST['email']) ? $_POST['email'] : ''; ?>" required placeholder="Enter your email">
+                <label for="email" class="form-label">อีเมล</label>
+                <input type="email" class="form-control" id="email" name="email" value="<?php echo isset($_POST['email']) ? $_POST['email'] : ''; ?>" required placeholder="กรอกอีเมลของคุณ">
             </div>
 
             <!-- ส่วนของเพศ -->
             <div class="mb-3">
-                <label for="gender" class="form-label">Gender</label>
+                <label for="gender" class="form-label">เพส</label>
                 <select class="form-select gender" id="gender" name="gender" required>
-                    <option value="">Select Gender</option>
-                    <option value="male" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'male') ? 'selected' : ''; ?>>Male</option>
-                    <option value="female" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'female') ? 'selected' : ''; ?>>Female</option>
-                    <option value="other" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'other') ? 'selected' : ''; ?>>Other</option>
+                    <option value="">เลือกเพส</option>
+                    <option value="male" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'male') ? 'selected' : ''; ?>>ชาย</option>
+                    <option value="female" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'female') ? 'selected' : ''; ?>>หญิง</option>
+                    <option value="other" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'other') ? 'selected' : ''; ?>>อื่นๆ</option>
                 </select>
             </div>
 
             <!-- ส่วนของรหัสผ่าน -->
             <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">รหัสผ่าน</label>
                 <div class="password-field">
-                    <input type="password" class="form-control" id="password" name="password" value="<?php echo isset($_POST['password']) ? $_POST['password'] : ''; ?>" required placeholder="Enter your password">
+                    <input type="password" class="form-control" id="password" name="password" value="<?php echo isset($_POST['password']) ? $_POST['password'] : ''; ?>" required placeholder="กรอกรหัสผ่านของคุณ">
                 </div>
             </div>
 
             <!-- ส่วนของยืนยันรหัสผ่าน -->
             <div class="mb-3">
-                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <label for="confirm_password" class="form-label">ยืนยันรหัสผ่าน</label>
                 <div class="password-field">
                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" value="<?php echo isset($_POST['confirm_password']) ? $_POST['confirm_password'] : ''; ?>" required placeholder="Confirm your password">
                 </div>
             </div>
 
             <div class="row">
-    <!-- ส่วนของภาษา (เปลี่ยนให้เหมือน Interests) -->
-    <div class="col-md-6">
-        <label for="languages_spoken" class="form-label">Languages Spoken</label>
-        <select class="form-select interestchose" id="multiple-select-custom-field" name="languages_spoken[]" multiple>
-            <option value="1" <?php echo (isset($_POST['languages_spoken']) && in_array(1, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>English</option>
-            <option value="2" <?php echo (isset($_POST['languages_spoken']) && in_array(2, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>Thai</option>
-            <option value="3" <?php echo (isset($_POST['languages_spoken']) && in_array(3, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>Chinese</option>
-            <option value="4" <?php echo (isset($_POST['languages_spoken']) && in_array(4, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>Japanese</option>
-            <option value="5" <?php echo (isset($_POST['languages_spoken']) && in_array(5, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>Spanish</option>
-        </select>
-    </div>
+                <!-- ส่วนของภาษา (เปลี่ยนให้เหมือน Interests) -->
+                <div class="col-md-6">
+                    <label for="languages_spoken" class="form-label">ภาษาที่พูดได้</label>
+                    <select class="form-select interestchose" id="multiple-select-custom-field" name="languages_spoken[]" multiple>
+                        <option value="1" <?php echo (isset($_POST['languages_spoken']) && in_array(1, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>อังกฤษ</option>
+                        <option value="2" <?php echo (isset($_POST['languages_spoken']) && in_array(2, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>ไทย</option>
+                        <option value="3" <?php echo (isset($_POST['languages_spoken']) && in_array(3, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>จีน</option>
+                        <option value="4" <?php echo (isset($_POST['languages_spoken']) && in_array(4, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>ญี่ปุ่น</option>
+                        <option value="5" <?php echo (isset($_POST['languages_spoken']) && in_array(5, $_POST['languages_spoken'])) ? 'selected' : ''; ?>>สเปน</option>
+                    </select>
+                </div>
 
-    <!-- ส่วนของความสนใจ -->
-    <div class="col-md-6">
-        <label for="interests" class="form-label">Interests</label>
-        <select class="form-select interestchose" id="multiple-select-custom-field2" name="interests[]" multiple>
-            <?php
-            // ดึงข้อมูลความสนใจจากตาราง interests
-            $interestQuery = "SELECT * FROM interests";
-            $result = $conn->query($interestQuery);
-            while ($row = $result->fetch_assoc()) {
-                // เลือก interest ที่เลือกไว้
-                $selected = (isset($_POST['interests']) && in_array($row['id'], $_POST['interests'])) ? 'selected' : '';
-                echo "<option value='{$row['id']}' $selected>{$row['interest_name']}</option>";
-            }
-            ?>
-        </select>
-    </div>
-</div>
+                <!-- ส่วนของความสนใจ -->
+                <div class="col-md-6">
+                    <label for="interests" class="form-label">Interests</label>
+                    <select class="form-select interestchose" id="multiple-select-custom-field2" name="interests[]" multiple>
+                        <?php
+                        // ดึงข้อมูลความสนใจจากตาราง interests
+                        $interestQuery = "SELECT * FROM interests";
+                        $result = $conn->query($interestQuery);
+                        while ($row = $result->fetch_assoc()) {
+                            // เลือก interest ที่เลือกไว้
+                            $selected = (isset($_POST['interests']) && in_array($row['id'], $_POST['interests'])) ? 'selected' : '';
+                            echo "<option value='{$row['id']}' $selected>{$row['interest_name']}</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
 
 
             <!-- ปุ่มสมัครสมาชิก -->
-            <button type="submit" class="btn btn-primary mt-3">Sign Up</button>
+            <button type="submit" class="btn btn-primary mt-3">สมัครสมาชิก</button>
         </form>
 
     </div>

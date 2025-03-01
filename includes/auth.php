@@ -1,6 +1,13 @@
 <?php
+// ลบ session_start() ออก
+// session_start();
+
 function isLoggedIn() {
     return isset($_SESSION['user_id']);
+}
+
+function isAdmin() {
+    return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
 }
 
 function requireLogin() {
@@ -21,4 +28,12 @@ function regenerateSession() {
     } else {
         $_SESSION['last_regeneration'] = time();
     }
+}
+
+function isFirstLogin() {
+    return !isset($_SESSION['first_login']);
+}
+
+if (isLoggedIn() && isFirstLogin()) {
+    $_SESSION['first_login'] = true;
 }

@@ -1,92 +1,117 @@
 <?php
 session_start();
 require_once '../config/config.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+if (!isLoggedIn()) {
+    header('Location: login.php');
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-
-// เพิ่มโค้ดประมวลผลฟอร์ม
+// ประมวลผลฟอร์มเมื่อมีการ POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // รับข้อมูลจากฟอร์ม
     $title = $_POST['title'];
     $description = $_POST['description'];
-    $interests = $_POST['interests'];  // อาร์เรย์ของกิจกรรมที่เลือก
-    $destination = $_POST['destination'];
+    $interests = $_POST['interests'];
     $activity_date = $_POST['activity_date'];
+    $activity_time = $_POST['activity_time'];
     $post_local = $_POST['post_local'];
+    $max_members = $_POST['max_members'];
+    $user_id = $_SESSION['user_id'];
 
-    // แทรกข้อมูลโพสต์ลงในตาราง community_posts
-    $sql = "INSERT INTO community_posts (title, description, user_id, destination, activity_date, created_at, updated_at, post_local) 
-            VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?)";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param('ssisss', $title, $description, $user_id, $destination, $activity_date, $post_local);
-    $result = $stmt->execute();
+    // เริ่ม transaction
+    $conn->begin_transaction();
 
-    // รับ post_id ของโพสต์ที่เพิ่งถูกแทรก
-    $post_id = $conn->insert_id;
+    try {
+        // แทรกข้อมูลโพสต์ลงในตาราง community_posts
+        $sql = "INSERT INTO community_posts (
+                    title, description, user_id, activity_date, activity_time, 
+                    created_at, updated_at, post_local, max_members, current_members, activity_image
+                ) VALUES (
+                    ?, ?, ?, ?, ?, 
+                    NOW(), NOW(), ?, ?, 1, ?
+                )";
 
-    // แทรกข้อมูลกิจกรรมที่เลือกลงในตาราง community_post_interests
-    if (isset($_POST['interests'])) {  // ตรวจสอบว่ามีการเลือกความสนใจหรือไม่
-        foreach ($_POST['interests'] as $interest_id) {
-            $sql = "INSERT INTO community_post_interests (post_id, interest_id) 
-                    VALUES (?, ?)";
-            $interest_stmt = $conn->prepare($sql);
-            $interest_stmt->bind_param('ii', $post_id, $interest_id);
-            if (!$interest_stmt->execute()) {
-                echo "Error: " . $interest_stmt->error; // แสดงข้อผิดพลาดหากมี
+        // จัดการรูปภาพ QR Code
+        $activity_image = null;
+        if (isset($_FILES['activity_image']) && $_FILES['activity_image']['error'] == 0) {
+            $file = $_FILES['activity_image'];
+            $allowed = ['jpg', 'jpeg', 'png'];
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+            if (in_array($ext, $allowed)) {
+                $activity_image = uniqid() . '.' . $ext;
+                $upload_dir = '../uploads/qr_code';
+                if (!file_exists($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+
+                $upload_path = $upload_dir . '/' . $activity_image;
+                if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
+                    throw new Exception('ไม่สามารถอัพโหลดไฟล์ได้');
+                }
             }
         }
-    }
 
-    // เพิ่มข้อความแจ้งเตือนหรือดำเนินการต่อหลังจากบันทึกเสร็จ
-    $_SESSION['alert'] = [
-        'type' => 'success',
-        'message' => 'โพสต์และกิจกรรมถูกสร้างเรียบร้อยแล้ว!'
-    ];
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param(
+            'ssisssis',
+            $title,
+            $description,
+            $user_id,
+            $activity_date,
+            $activity_time,
+            $post_local,
+            $max_members,
+            $activity_image
+        );
+        $stmt->execute();
 
-    // หลังจากสร้างโพสต์สำเร็จ ให้เพิ่มผู้สร้างเป็นผู้เข้าร่วมอัตโนมัติ
-    if ($stmt->execute()) {
-        $post_id = $conn->insert_id; // รับ ID ของโพสต์ที่เพิ่งสร้าง
-        
+        // รับ post_id ของโพสต์ที่เพิ่งถูกแทรก
+        $post_id = $conn->insert_id;
+
         // เพิ่มผู้สร้างเป็นผู้เข้าร่วมอัตโนมัติ
-        $join_sql = "INSERT INTO post_members (post_id, user_id, status) VALUES (?, ?, 'confirmed')";
+        $join_sql = "INSERT INTO post_members (post_id, user_id, status, joined_at) 
+                     VALUES (?, ?, 'confirmed', NOW())";
         $join_stmt = $conn->prepare($join_sql);
-        $join_stmt->bind_param("ii", $post_id, $_SESSION['user_id']);
+        $join_stmt->bind_param("ii", $post_id, $user_id);
         $join_stmt->execute();
 
-        // อัพเดทจำนวนผู้เข้าร่วมในโพสต์
-        $update_count = "UPDATE community_posts SET current_members = 1 WHERE post_id = ?";
-        $count_stmt = $conn->prepare($update_count);
-        $count_stmt->bind_param("i", $post_id);
-        $count_stmt->execute();
-
-        // บันทึก interests
-        if (!empty($selected_interests)) {
-            $interest_sql = "INSERT INTO post_interests (post_id, interest_id) VALUES (?, ?)";
-            $interest_stmt = $conn->prepare($interest_sql);
-            foreach ($selected_interests as $interest_id) {
-                $interest_stmt->bind_param("ii", $post_id, $interest_id);
+        // แทรกข้อมูลกิจกรรมที่เลือก
+        if (isset($_POST['interests'])) {
+            foreach ($_POST['interests'] as $interest_id) {
+                $interest_sql = "INSERT INTO post_interests (post_id, interest_id) VALUES (?, ?)";
+                $interest_stmt = $conn->prepare($interest_sql);
+                $interest_stmt->bind_param('ii', $post_id, $interest_id);
                 $interest_stmt->execute();
             }
         }
 
+        // ยืนยัน transaction
+        $conn->commit();
+
+        $_SESSION['alert'] = [
+            'type' => 'success',
+            'message' => 'โพสต์และกิจกรรมถูกสร้างเรียบร้อยแล้ว!'
+        ];
         header("Location: post_detail.php?post_id=" . $post_id);
         exit();
-    } else {
-        $error = "เกิดข้อผิดพลาดในการสร้างกิจกรรม";
+    } catch (Exception $e) {
+        // ถ้าเกิดข้อผิดพลาด ให้ rollback การทำงานทั้งหมด
+        $conn->rollback();
+        $_SESSION['alert'] = [
+            'type' => 'danger',
+            'message' => 'เกิดข้อผิดพลาดในการสร้างกิจกรรม: ' . $e->getMessage()
+        ];
     }
 }
 
 // ดึงรายการความสนใจทั้งหมด
-$interests_sql = "SELECT * FROM interests ORDER BY interest_name";
-$interests = $conn->query($interests_sql);
+$sql = "SELECT * FROM interests ORDER BY interest_name";
+$result = $conn->query($sql);
+$interests = $result->fetch_all(MYSQLI_ASSOC);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="th">
@@ -94,14 +119,13 @@ $interests = $conn->query($interests_sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BuddyGo - สร้างโพสต์</title>
+    <title>BuddyGo - สร้างกิจกรรม</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        html {
-            overflow: auto;
+        html , body{
+            overflow: hidden;
         }
-
         .interest-tags-container {
             display: flex;
             flex-wrap: wrap;
@@ -150,132 +174,120 @@ $interests = $conn->query($interests_sql);
         .btn-create:hover {
             transform: scale(1.05);
         }
-
-        @media (max-width: 767.98px) {
-            .interest-tag {
-                padding: 8px 16px;
-                font-size: 1rem;
-            }
-
-            .interest-tags-container {
-                gap: 10px;
-                padding: 10px;
-            }
-        }
     </style>
 </head>
 
 <body>
-    <?php
-    require_once '../includes/auth.php';
-    require_once '../includes/functions.php';
-    ?>
 
-<?php if (isset($_SESSION['alert'])): ?>
-    <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?> alert-dismissible fade show">
-        <?php echo $_SESSION['alert']['message']; ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <?php unset($_SESSION['alert']); ?>
-    <?php endif; ?>
-    
     <div class="row">
-        <!-- คอลัมน์ซ้าย (Sidebar) -->
-        <div class="col-12 col-md-3 col-lg-2">
+        <div class="col-md-2">
             <?php require_once '../includes/header.php'; ?>
         </div>
-        
-        <!-- คอลัมน์หลัก -->
-        <div class="col">
-            <div class="card mt-4 mb-4">
-                <div class="card-body">
-                    <h3 class="card-title mb-4 text-center">
-                        <i class="fas fa-plus-circle me-2" style="color: #0d6efd;"></i>สร้างโพสต์ใหม่
-                    </h3>
-                    
-                    <form method="POST" action="process_activity.php" enctype="multipart/form-data">
-                        <input type="hidden" name="action" value="create">
-                        
-                        <!-- หัวข้อและรายละเอียด -->
-                        <div class="mb-3">
-                            <label for="title" class="form-label">หัวข้อ</label>
-                            <input type="text" class="form-control" id="title" name="title"
-                            placeholder="ใส่หัวข้อกิจกรรมของคุณ" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="description" class="form-label">รายละเอียด</label>
-                            <textarea class="form-control" id="description" name="description"
-                            rows="4" placeholder="อธิบายรายละเอียดกิจกรรม" required></textarea>
-                        </div>
-                        
-                        <!-- จัดให้สถานที่อยู่คนเดียว -->
-                        <div class="mb-3">
-                            <label for="post_local" class="form-label">สถานที่</label>
-                            <input type="text" class="form-control" id="post_local" name="post_local" placeholder="กรุณากรอกชื่อสถานที่" required>
-                        </div>
-                        
-                        <!-- จัดให้จำนวนคน, วันที่และเวลาจัดกิจกรรมอยู่แถวเดียวกัน -->
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="max_members" class="form-label">จำนวนคนสูงสุด</label>
-                                <input type="number" class="form-control" id="max_members" name="max_members"
-                                    min="2" max="20" value="2" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="activity_date" class="form-label">วันที่จัดกิจกรรม</label>
-                                <input type="date" class="form-control" id="activity_date" name="activity_date" 
-                                    min="<?php echo date('Y-m-d'); ?>" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="activity_time" class="form-label">เวลาเริ่มกิจกรรม</label>
-                                <input type="time" class="form-control" id="activity_time" name="activity_time" required>
-                            </div>
-                        </div>
-
-                        <!-- QR Code -->
-                        <div class="mb-3">
-                            <label for="activity_image" class="form-label">รูปภาพQR Code เข้ากลุ่ม LINE</label>
-                            <input type="file" class="form-control" id="activity_image" name="activity_image" accept="image/*">
-                            <small class="text-muted">รองรับไฟล์ภาพ jpg, jpeg, png ขนาดไม่เกิน 5MB</small>
-                        </div>
-
-                        <!-- ส่วนของการเลือกกิจกรรม -->
-                        <div class="mb-4">
-                            <label for="interests" class="form-label">กิจกรรม (เลือกได้ไม่เกิน 5 อย่าง)</label>
-                            <div class="interest-tags-container mb-2">
-                                <?php while ($interest = $interests->fetch_assoc()): ?>
-                                    <label class="interest-tag">
-                                        <input type="checkbox" name="interests[]"
-                                            value="<?php echo $interest['id']; ?>"
-                                            style="display: none;">
-                                        <?php echo htmlspecialchars($interest['interest_name']); ?>
-                                    </label>
-                                <?php endwhile; ?>
-                            </div>
-                            <small class="text-danger" id="interest-limit-warning" style="display: none;">
-                                คุณสามารถเลือกได้ไม่เกิน 5 กิจกรรมเท่านั้น
-                            </small>
-                        </div>
-
-
-                        <button type="submit" class="btn btn-primary btn-create w-100">
-                            <i class="fas fa-paper-plane me-2"></i>สร้างโพสต์
-                        </button>
-                    </form>
+        <div class="col-md-10">
+            <?php if (isset($_SESSION['alert'])): ?>
+                <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?> alert-dismissible fade show">
+                    <?php
+                    echo $_SESSION['alert']['message'];
+                    unset($_SESSION['alert']);
+                    ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
+            <?php endif; ?>
+
+            <div class="row">
+                <div class="col-md-10 mt-5">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title mb-4 text-center">
+                                <i class="fas fa-plus-circle me-2" style="color: #0d6efd;"></i>สร้างกิจกรรมใหม่
+                            </h3>
+
+                            <form method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>" enctype="multipart/form-data">
+                                <!-- หัวข้อและรายละเอียด -->
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">หัวข้อกิจกรรม</label>
+                                    <input type="text" class="form-control" id="title" name="title"
+                                        placeholder="ใส่หัวข้อกิจกรรมของคุณ" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">รายละเอียดกิจกรรม</label>
+                                    <textarea class="form-control" id="description" name="description"
+                                        rows="4" placeholder="อธิบายรายละเอียดกิจกรรม" required></textarea>
+                                </div>
+
+                                <!-- สถานที่ -->
+                                <div class="mb-3">
+                                    <label for="post_local" class="form-label">สถานที่จัดกิจกรรม</label>
+                                    <input type="text" class="form-control" id="post_local" name="post_local"
+                                        placeholder="กรุณากรอกชื่อสถานที่" required>
+                                </div>
+
+                                <!-- จำนวนคน วันที่ และเวลา -->
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="max_members" class="form-label">จำนวนผู้เข้าร่วมสูงสุด</label>
+                                        <input type="number" class="form-control" id="max_members" name="max_members"
+                                            min="3" max="20" value="3" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="activity_date" class="form-label">วันที่จัดกิจกรรม</label>
+                                        <input type="date" class="form-control" id="activity_date" name="activity_date"
+                                            min="<?php echo date('Y-m-d'); ?>" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="activity_time" class="form-label">เวลาเริ่มกิจกรรม</label>
+                                        <input type="time" class="form-control" id="activity_time" name="activity_time" required>
+                                    </div>
+                                </div>
+
+                                <!-- QR Code -->
+                                <div class="mb-3">
+                                    <label for="activity_image" class="form-label">รูปภาพ QR Code เข้ากลุ่ม LINE</label>
+                                    <input type="file" class="form-control" id="activity_image" name="activity_image" accept="image/*">
+                                    <small class="text-muted">รองรับไฟล์ภาพ jpg, jpeg, png ขนาดไม่เกิน 5MB</small>
+                                </div>
+
+                                <!-- ความสนใจ -->
+                                <div class="mb-4">
+                                    <label class="form-label">ความสนใจที่เกี่ยวข้อง (เลือกได้ไม่เกิน 5 อย่าง)</label>
+                                    <div class="interest-tags-container mb-2">
+                                        <?php foreach ($interests as $interest): ?>
+                                            <label class="interest-tag">
+                                                <input type="checkbox" name="interests[]"
+                                                    value="<?php echo $interest['id']; ?>"
+                                                    style="display:none">
+                                                <?php echo htmlspecialchars($interest['interest_name']); ?>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <small class="text-danger" id="interest-limit-warning" style="display: none;">
+                                        คุณสามารถเลือกได้ไม่เกิน 5 ความสนใจเท่านั้น
+                                    </small>
+                                </div>
+
+                                <!-- ปุ่มดำเนินการ -->
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-create">
+                                        <i class="fas fa-paper-plane me-2"></i>สร้างกิจกรรม
+                                    </button>
+                                    <a href="index.php" class="btn btn-secondary ms-2">
+                                        <i class="fas fa-times me-2"></i>ยกเลิก
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2 col-md-2 mt-3"><?php displayAd(); ?> <br><?php displayAd(); ?></div>
             </div>
         </div>
-
-        <div class="col-1"></div>
     </div>
 
-    <?php include '../includes/footer.php'; ?>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         $(document).ready(function() {
-            // จัดการการคลิกที่ interest tag
             $('.interest-tag').click(function(e) {
                 e.preventDefault();
                 const checkbox = $(this).find('input[type="checkbox"]');
@@ -290,7 +302,6 @@ $interests = $conn->query($interests_sql);
                 $(this).toggleClass('active');
                 checkbox.prop('checked', !isChecked);
 
-                // ซ่อนข้อความเตือนถ้าจำนวนที่เลือกน้อยกว่า 5
                 if (selectedCount < 5) {
                     $('#interest-limit-warning').hide();
                 }
@@ -298,4 +309,5 @@ $interests = $conn->query($interests_sql);
         });
     </script>
 </body>
+
 </html>

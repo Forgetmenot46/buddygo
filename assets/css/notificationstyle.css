@@ -76,7 +76,7 @@
     margin-top: 10px;
 }
 
-.qr-code-container img {
+.notification-image img {
     border-radius: 10px;
     max-height: 200px;
     object-fit: cover;
@@ -107,4 +107,74 @@
 /* สไตล์ให้กับปุ่มการแจ้งเตือน */
 .notification-badge {
     animation: notification-pulse 2s infinite;
+}
+
+@keyframes notification-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+/* สไตล์สำหรับไอคอนการแจ้งเตือน */
+.notification-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+}
+
+/* สไตล์สำหรับเวลาการแจ้งเตือน */
+.notification-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* สไตล์สำหรับการแจ้งเตือนที่ว่างเปล่า */
+.notification-list {
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* สไตล์สำหรับปุ่มทำเครื่องหมายว่าอ่านทั้งหมดแล้ว */
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* สไตล์สำหรับปุ่มดูกิจกรรม */
+.btn-outline-secondary {
+    font-size: 0.8rem;
+    padding: 3px 8px;
 }

@@ -55,6 +55,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
         ];
     }
 }
+
+// จัดการการยืนยันเบอร์มือถือ
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['verify_phone'])) {
+    $phone_number = $_POST['phone_number'];
+
+    // ตรวจสอบว่าเบอร์มือถือที่กรอกตรงกับเบอร์ในฐานข้อมูลหรือไม่
+    if ($phone_number === $user['phone_number']) {
+        // บันทึกการแจ้งเตือนสำหรับผู้ดูแลระบบ
+        $notification_sql = "INSERT INTO notifications (user_id, from_user_id, type, message) VALUES (?, ?, ?, ?)";
+        $notification_stmt = $conn->prepare($notification_sql);
+        $type = 'phone_verification';
+        $message = "ผู้ใช้ {$user['username']} ต้องการยืนยันเบอร์มือถือ: $phone_number";
+        $notification_stmt->bind_param("iiss", $user_id, $user_id, $type, $message);
+        $notification_stmt->execute();
+
+        $_SESSION['alert'] = [
+            'type' => 'success',
+            'message' => 'การแจ้งเตือนถูกส่งไปยังผู้ดูแลระบบแล้ว'
+        ];
+    } else {
+        $_SESSION['alert'] = [
+            'type' => 'danger',
+            'message' => 'เบอร์มือถือไม่ตรงกัน'
+        ];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -92,6 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
         <div class="col-4"><?php include '../includes/header.php'; ?></div>
     </div>
     <div class="container mt-4">
+        <!-- เรียกใช้ฟังก์ชันแสดงโฆษณา -->
+        
+
         <div class="settings-card">
             <h2 class="mb-4">
                 <i class="fas fa-cog me-2 text-primary"></i>ตั้งค่า
@@ -142,11 +171,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
                 </div>
             </div>
 
-           
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">ยืนยันเบอร์มือถือ</h5>
+                    <form method="POST" action="">
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">เบอร์มือถือ</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" required>
+                        </div>
+                        <button type="submit" name="verify_phone" class="btn btn-primary">
+                            <i class="fas fa-check me-2"></i>ส่งรหัสยืนยัน
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+
         </div>
     </div>
 
-    <?php include '../includes/footer.php'; ?>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

@@ -142,3 +142,56 @@ footer {
 }
 
 /* Add more global styles as needed */
+
+/* สไตล์สำหรับเมนู dropdown การแจ้งเตือน */
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 320px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+}
+
+.nav-item:hover .notification-dropdown {
+    display: block;
+}
+
+.notification-list-dropdown {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+    text-decoration: none;
+    color: #333;
+}
+
+.notification-item.unread {
+    background-color: #e8f4fd;
+}
+
+.notification-content-small {
+    flex: 1;
+    overflow: hidden;
+}
+
+.notification-text {
+    line-height: 1.3;
+}
+
+/* สไตล์สำหรับแบดจ์การแจ้งเตือน */
+.badge.position-absolute {
+    transform: translate(-50%, -50%) !important;
+}
