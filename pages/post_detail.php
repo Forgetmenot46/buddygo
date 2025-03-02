@@ -155,23 +155,56 @@ function addParticipant($post_id, $user_id, $conn, $post)
     $stmt->bind_param("ii", $post_id, $user_id);
     $success = $stmt->execute();
 
-
-
     return $success;
 }
 
 // ฟังก์ชันสำหรับยืนยันการเข้าร่วม
 function confirmParticipation($post_id, $user_id, $conn, $post)
 {
-    // อัพเดทสถานะการเข้าร่วม
-    $sql = "UPDATE post_members SET status = 'confirmed' WHERE post_id = ? AND user_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $post_id, $user_id);
-    $success = $stmt->execute();
+    // เริ่ม transaction
+    $conn->begin_transaction();
 
+    try {
+        // อัพเดทสถานะการเข้าร่วม
+        $sql = "UPDATE post_members SET status = 'confirmed' WHERE post_id = ? AND user_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $post_id, $user_id);
+        $stmt->execute();
 
+        // ตรวจสอบว่ามีกลุ่มแชทสำหรับโพสต์นี้หรือยัง
+        $check_group_sql = "SELECT group_id FROM chat_groups WHERE post_id = ?";
+        $check_stmt = $conn->prepare($check_group_sql);
+        $check_stmt->bind_param("i", $post_id);
+        $check_stmt->execute();
+        $result = $check_stmt->get_result();
 
-    return $success;
+        if ($result->num_rows == 0) {
+            // ถ้ายังไม่มีกลุ่มแชท ให้สร้างใหม่
+            $create_group_sql = "INSERT INTO chat_groups (post_id) VALUES (?)";
+            $create_stmt = $conn->prepare($create_group_sql);
+            $create_stmt->bind_param("i", $post_id);
+            $create_stmt->execute();
+            $group_id = $conn->insert_id;
+        } else {
+            $group_data = $result->fetch_assoc();
+            $group_id = $group_data['group_id'];
+        }
+
+        // เพิ่มผู้ใช้เข้ากลุ่มแชท
+        $add_member_sql = "INSERT IGNORE INTO chat_group_members (group_id, user_id) VALUES (?, ?)";
+        $add_member_stmt = $conn->prepare($add_member_sql);
+        $add_member_stmt->bind_param("ii", $group_id, $user_id);
+        $add_member_stmt->execute();
+
+        // Commit transaction
+        $conn->commit();
+        return true;
+    } catch (Exception $e) {
+        // หากเกิดข้อผิดพลาด ให้ rollback
+        $conn->rollback();
+        error_log("Error in confirmParticipation: " . $e->getMessage());
+        return false;
+    }
 }
 ?>
 
@@ -248,6 +281,9 @@ function confirmParticipation($post_id, $user_id, $conn, $post)
                             </a>
                             <a href="#" class="btn btn-outline-primary" id="joinButton" style="display: <?php echo $join_button_display; ?>">
                                 <i class="fa-solid fa-right-to-bracket"></i> เข้าร่วมกิจกรรม
+                            </a>
+                            <a href="group_chat.php?group_id=<?php echo $post_id; ?>" class="btn btn-outline-info">
+                                <i class="fas fa-comments me-2"></i>เข้าร่วมแชทกลุ่ม
                             </a>
 
                             <!-- Modal Popup -->
@@ -431,6 +467,17 @@ function confirmParticipation($post_id, $user_id, $conn, $post)
                                         </h6>
                                         <small class="text-muted">ยืนยันเข้าร่วม - <?php echo date('d/m/Y H:i', strtotime($member['joined_at'])); ?></small>
                                     </div>
+                                    <?php if ($member['id'] != $_SESSION['user_id']): ?>
+                                        <div class="ms-auto">
+                                            <button class="btn btn-danger btn-sm report-user-btn" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#reportModal"
+                                                    data-user-id="<?php echo $member['id']; ?>"
+                                                    data-username="<?php echo htmlspecialchars($member['username']); ?>">
+                                                <i class="fas fa-flag me-1"></i>รายงาน
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                         <?php
                             endwhile;
@@ -441,181 +488,158 @@ function confirmParticipation($post_id, $user_id, $conn, $post)
                     </div>
                 </div>
             </div>
+
+            <!-- Modal สำหรับรายงานผู้ใช้ -->
+            <div class="modal fade" id="reportModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">รายงานผู้ใช้</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form id="reportForm">
+                            <div class="modal-body">
+                                <input type="hidden" id="reportedUserId" name="reported_user_id">
+                                <input type="hidden" name="post_id" value="<?php echo $post_id; ?>">
+                                
+                                <p>คุณกำลังรายงาน: <span id="reportedUsername" class="fw-bold"></span></p>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">ประเภทการรายงาน</label>
+                                    <select class="form-select" name="violation_type" required>
+                                        <option value="">เลือกประเภท</option>
+                                        <option value="no_show">ไม่มาตามนัด</option>
+                                        <option value="harassment">การคุกคาม/ก่อกวน</option>
+                                        <option value="inappropriate">พฤติกรรมไม่เหมาะสม</option>
+                                        <option value="scam">การหลอกลวง</option>
+                                        <option value="other">อื่นๆ</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">รายละเอียด</label>
+                                    <textarea class="form-control" name="description" rows="4" required
+                                              placeholder="กรุณาอธิบายรายละเอียดของปัญหาที่เกิดขึ้น"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                                <button type="submit" class="btn btn-danger">ส่งรายงาน</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // กำหนดตัวแปรที่จำเป็นสำหรับ JavaScript
+        const postId = <?php echo $post_id; ?>;
+        const userId = <?php echo $_SESSION['user_id']; ?>;
+    </script>
+    <?php
+    include '../includes/activity_functions.php';
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            // กำหนดตัวแปรที่จำเป็นสำหรับ JavaScript
-            const postId = <?php echo $post_id; ?>;
-            const userId = <?php echo $_SESSION['user_id']; ?>;
-        </script>
-        <?php
-        include '../includes/activity_functions.php';
-
-        // ใช้ฟังก์ชันจาก activity_functions.php
-        if (isset($_POST['join_activity'])) {
-            $result = addParticipant($post_id, $user_id, $conn, $post);
-            if ($result) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'เข้าร่วมกิจกรรมสำเร็จ!'
-                ]);
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
-                ]);
-            }
+    // ใช้ฟังก์ชันจาก activity_functions.php
+    if (isset($_POST['join_activity'])) {
+        $result = addParticipant($post_id, $user_id, $conn, $post);
+        if ($result) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'เข้าร่วมกิจกรรมสำเร็จ!'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
+            ]);
         }
-        ?>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Modal handling
-                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-                const confirmBtn = document.getElementById('confirmBtn');
-                const yesOption = document.getElementById('yesOption');
-                const joinButton = document.getElementById('joinButton');
+    }
+    ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal elements
+            const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            const confirmBtn = document.getElementById('confirmBtn');
+            const yesOption = document.getElementById('yesOption');
+            const joinButton = document.getElementById('joinButton');
 
-                // Enable/disable confirm button based on radio selection
+            // Enable/disable confirm button based on radio selection
+            if (yesOption) {
                 yesOption.addEventListener('change', function() {
                     confirmBtn.disabled = !this.checked;
                 });
+            }
 
-                // Join button click handler
-                if (joinButton) {
-                    joinButton.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        modal.show();
-                    });
-                }
+            // Join button click handler
+            if (joinButton) {
+                joinButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    modal.show();
+                });
+            }
 
-                // Confirm button click handler
+            // Confirm button click handler
+            if (confirmBtn) {
                 confirmBtn.addEventListener('click', function() {
                     if (yesOption.checked) {
                         joinActivity();
                         modal.hide();
                     }
                 });
+            }
 
-                // Function to handle joining activity
-                function joinActivity() {
-                    fetch('join_activity.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `post_id=${postId}`
-                        })
-                        .then(response => {
-                            // เช็คว่า response เป็น JSON หรือไม่
-                            const contentType = response.headers.get('content-type');
-                            if (contentType && contentType.includes('application/json')) {
-                                return response.json().then(data => ({
-                                    ok: response.ok,
-                                    data
-                                }));
-                            }
-                            // ถ้าไม่ใช่ JSON ให้อ่านเป็น text
-                            return response.text().then(text => ({
-                                ok: response.ok,
-                                text
-                            }));
-                        })
-                        .then(result => {
-                            if (!result.ok) {
-                                throw new Error(result.data?.message || result.text || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
-                            }
-
-                            if (result.data) {
-                                // กรณีได้รับ JSON response
-                                if (result.data.success) {
-                                    alert('เข้าร่วมกิจกรรมสำเร็จ!');
-                                    location.reload();
-                                } else {
-                                    throw new Error(result.data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
-                                }
-                            } else {
-                                // กรณีได้รับ text response
-                                alert('เข้าร่วมกิจกรรมสำเร็จ!');
-                                location.reload();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert(error.message);
-
-                            // ถ้าการเข้าร่วมสำเร็จแต่มีปัญหากับ response
-                            if (error.message.includes('SyntaxError') ||
-                                error.message.includes('เกิดข้อผิดพลาดในการเชื่อมต่อ')) {
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 1500);
-                            }
-                        });
-                }
-
-                // Function to confirm join
-                window.confirmJoin = function(postId, userId) {
-                    fetch('confirm_join.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `post_id=${postId}&user_id=${userId}`
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                alert('ยืนยันการเข้าร่วมสำเร็จ!');
-                                location.reload();
-                            } else {
-                                alert(data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
-                        });
-                }
-
-                // Function to cancel join
-                window.cancelJoin = function(postId, userId) {
-                    if (confirm('คุณแน่ใจหรือไม่ที่จะยกเลิกการเข้าร่วม?')) {
-                        fetch('cancel_join.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                },
-                                body: `post_id=${postId}&user_id=${userId}`
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Network response was not ok');
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                if (data.success) {
-                                    alert('ยกเลิกการเข้าร่วมสำเร็จ');
-                                    location.reload();
-                                } else {
-                                    alert(data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
-                            });
+            // Function to handle joining activity
+            function joinActivity() {
+                fetch('join_activity.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `post_id=${postId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('เข้าร่วมกิจกรรมสำเร็จ!');
+                        window.location.href = `group_chat.php?group_id=${postId}`;
+                    } else {
+                        throw new Error(data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
                     }
-                }
-            });
-        </script>
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                });
+            }
+
+            // Function to confirm join
+            window.confirmJoin = function(postId, userId) {
+                fetch('confirm_join.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `post_id=${postId}&user_id=${userId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('ยืนยันการเข้าร่วมสำเร็จ!');
+                        window.location.href = `group_chat.php?group_id=${postId}`;
+                    } else {
+                        alert(data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

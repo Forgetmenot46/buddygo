@@ -133,6 +133,12 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="group_chat.php" class="nav-link <?php echo isCurrentPage('group_chat.php') ? 'active' : ''; ?>">
+                        <span class="material-symbols-rounded">groups</span>
+                        <span class="nav-label">แชทกิจกรรม</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="notifications.php" class="nav-link <?php echo isCurrentPage('notifications.php') ? 'active' : ''; ?> position-relative">
                         <i class="fas fa-bell"></i>
                         <span class="nav-label">แจ้งเตือน</span>
@@ -217,8 +223,13 @@ $isLoggedIn = isset($_SESSION['user_id']); // ถ้ามี user_id แสด�
             </li>
             <?php if ($isLoggedIn) : ?>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="#">
-                        <span class="material-symbols-rounded">chat</span>
+                    <a class="nav-link text-white" href="group_chat.php">
+                        <span class="material-symbols-rounded">groups</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="notifications.php">
+                        <i class="fas fa-bell"></i>
                     </a>
                 </li>
                 <li class="nav-item">
