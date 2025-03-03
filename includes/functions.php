@@ -268,3 +268,17 @@ function displayAd2()
         echo '</div>';
     }
 }
+
+function displayAd3($is_admin)
+{
+    if ($is_admin != 1) { // ตรวจสอบว่าไม่ใช่ admin
+        $adsDir = '../assets/images/banner/';
+        $ads = glob($adsDir . '@banner*.jpg'); // ดึงไฟล์ภาพที่ขึ้นต้นด้วย @banner
+        if (!empty($ads)) {
+            $randomAd = $ads[array_rand($ads)]; // เลือกโฆษณาแบบสุ่ม
+            echo '<div class="ad-container">';
+            echo '<img src="' . htmlspecialchars($randomAd) . '" alt="Ad" class="img-fluid">';
+            echo '</div>';
+        }
+    }
+}

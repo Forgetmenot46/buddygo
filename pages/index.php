@@ -460,7 +460,7 @@ $posts_result = $posts_stmt->get_result();
             <?php if ($posts_result && $posts_result->num_rows > 0): ?>
                 <div class="row">
                     <?php while ($post = $posts_result->fetch_assoc()): ?>
-                        <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="col-12 mb-4"> <!-- เปลี่ยนจาก col-md-6 col-lg-4 เป็น col-12 -->
                             <div class="card post-card h-100 shadow-sm hover-shadow transition"
                                 onclick="viewPost(<?php echo $post['post_id']; ?>, event)">
                                 <div class="card-header bg-white border-0 pt-3">

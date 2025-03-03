@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $lastname = $_POST['lastname'];
         $email = $_POST['email'];
         $password = $_POST['password'];
-        $profilePicturePath = 'avatar.png'; // ระบุที่อยู่ของรูปภาพเริ่มต้น
+        $profilePicturePath = 'default1.png'; // ระบุที่อยู่ของรูปภาพเริ่มต้น
         $birthdate = $_POST['birthdate'];
         $country_id = $_POST['country_id'];
         $phone_number = $_POST['phone_number'];
@@ -285,9 +285,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <!-- ส่วนของเพศ -->
             <div class="mb-3">
-                <label for="gender" class="form-label">เพส</label>
+                <label for="gender" class="form-label">เพศ</label>
                 <select class="form-select gender" id="gender" name="gender" required>
-                    <option value="">เลือกเพส</option>
+                    <option value="">เลือกเพศ</option>
                     <option value="male" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'male') ? 'selected' : ''; ?>>ชาย</option>
                     <option value="female" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'female') ? 'selected' : ''; ?>>หญิง</option>
                     <option value="other" <?php echo (isset($_POST['gender']) && $_POST['gender'] == 'other') ? 'selected' : ''; ?>>อื่นๆ</option>
@@ -306,7 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="mb-3">
                 <label for="confirm_password" class="form-label">ยืนยันรหัสผ่าน</label>
                 <div class="password-field">
-                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" value="<?php echo isset($_POST['confirm_password']) ? $_POST['confirm_password'] : ''; ?>" required placeholder="Confirm your password">
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" value="<?php echo isset($_POST['confirm_password']) ? $_POST['confirm_password'] : ''; ?>" required placeholder="กรอกรหัสผ่านอีกครั้ง">
                 </div>
             </div>
 
@@ -325,7 +325,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <!-- ส่วนของความสนใจ -->
                 <div class="col-md-6">
-                    <label for="interests" class="form-label">Interests</label>
+                    <label for="interests" class="form-label">ความสนใจ</label>
                     <select class="form-select interestchose" id="multiple-select-custom-field2" name="interests[]" multiple>
                         <?php
                         // ดึงข้อมูลความสนใจจากตาราง interests

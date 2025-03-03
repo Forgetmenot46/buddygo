@@ -73,6 +73,13 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
             window.location.href = "profile.php"; // เปลี่ยนเส้นทางไปยังหน้าโปรไฟล์
           </script>';
 }
+
+$active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'overview';
+
+// เรียกใช้ฟังก์ชัน displayAd3 ถ้าผู้ใช้ไม่ใช่ admin
+if ($user['is_admin'] != 1 && $user['role'] != 'admin') {
+    displayAd3($user['is_admin']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -363,6 +370,7 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
 
     <!-- ส่วนแสดงข้อมูลสำหรับ Admin -->
     <?php if ($user['is_admin'] == 1 || $user['role'] == 'admin'): ?>
+       
         <div class="container mt-4">
             <div class="admin-dashboard">
                 <div class="card">
@@ -383,26 +391,28 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="interests-tab" data-bs-toggle="tab" data-bs-target="#interests" type="button" role="tab" aria-controls="interests" aria-selected="false">ความสนใจ</button>
                             </li>
-                            <?php if ($_SESSION['role'] === 'admin'): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link <?php echo $active_tab === 'reports' ? 'active' : ''; ?>" 
-                                       href="?tab=reports">
-                                        <i class="fas fa-flag"></i> รายงานผู้ใช้
-                                        <?php
-                                        // นับจำนวนรายงานที่รอดำเนินการ
-                                        $pending_reports_sql = "SELECT COUNT(*) as count FROM user_reports WHERE status = 'pending'";
-                                        $pending_reports_result = $conn->query($pending_reports_sql);
-                                        $pending_count = $pending_reports_result->fetch_assoc()['count'];
-                                        if ($pending_count > 0):
-                                        ?>
-                                            <span class="badge bg-danger"><?php echo $pending_count; ?></span>
-                                        <?php endif; ?>
-                                    </a>
-                                </li>
-                            <?php endif; ?>
+                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+    <li class="nav-item">
+        <a class="nav-link <?php echo isset($active_tab) && $active_tab === 'reports' ? 'active' : ''; ?>" 
+           href="?tab=reports">
+            <i class="fas fa-flag"></i> รายงานผู้ใช้
+            <?php
+            // นับจำนวนรายงานที่รอดำเนินการ
+            $pending_reports_sql = "SELECT COUNT(*) as count FROM user_reports WHERE status = 'pending'";
+            $pending_reports_result = $conn->query($pending_reports_sql);
+            $pending_count = $pending_reports_result->fetch_assoc()['count'];
+            if ($pending_count > 0):
+            ?>
+                <span class="badge bg-danger"><?php echo $pending_count; ?></span>
+            <?php endif; ?>
+        </a>
+    </li>
+<?php endif; ?>
+
                         </ul>
 
                         <div class="tab-content p-3" id="adminTabContent">
+                            
                             <!-- ภาพรวม -->
                             <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
                                 <div class="row">
@@ -721,13 +731,14 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
                                         </div>
                                     </div>
                                 </div>
+                                
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
+        
         <!-- เพิ่ม CSS สำหรับ Admin Dashboard -->
         <style>
             .admin-dashboard {
