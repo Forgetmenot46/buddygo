@@ -383,6 +383,23 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="interests-tab" data-bs-toggle="tab" data-bs-target="#interests" type="button" role="tab" aria-controls="interests" aria-selected="false">ความสนใจ</button>
                             </li>
+                            <?php if ($_SESSION['role'] === 'admin'): ?>
+                                <li class="nav-item">
+                                    <a class="nav-link <?php echo $active_tab === 'reports' ? 'active' : ''; ?>" 
+                                       href="?tab=reports">
+                                        <i class="fas fa-flag"></i> รายงานผู้ใช้
+                                        <?php
+                                        // นับจำนวนรายงานที่รอดำเนินการ
+                                        $pending_reports_sql = "SELECT COUNT(*) as count FROM user_reports WHERE status = 'pending'";
+                                        $pending_reports_result = $conn->query($pending_reports_sql);
+                                        $pending_count = $pending_reports_result->fetch_assoc()['count'];
+                                        if ($pending_count > 0):
+                                        ?>
+                                            <span class="badge bg-danger"><?php echo $pending_count; ?></span>
+                                        <?php endif; ?>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
                         </ul>
 
                         <div class="tab-content p-3" id="adminTabContent">
@@ -626,6 +643,85 @@ if (isset($_GET['update']) && $_GET['update'] == 'success') {
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- รายงานผู้ใช้ -->
+                            <?php if ($active_tab === 'reports' && $_SESSION['role'] === 'admin'): ?>
+                                <div class="tab-pane fade show active" id="reports">
+                                    <div class="card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">รายงานผู้ใช้</h5>
+                                            <a href="admin/manage_reports.php" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-cog"></i> จัดการรายงานทั้งหมด
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <?php
+                                            // ดึงรายงานล่าสุด 5 รายการ
+                                            $recent_reports_sql = "SELECT r.*, 
+                                                                        u1.username as reported_username,
+                                                                        u2.username as reporter_username,
+                                                                        (SELECT COUNT(*) FROM user_reports WHERE reported_user_id = r.reported_user_id) as total_reports
+                                                                 FROM user_reports r
+                                                                 JOIN users u1 ON r.reported_user_id = u1.id
+                                                                 JOIN users u2 ON r.reporting_user_id = u2.id
+                                                                 WHERE r.status = 'pending'
+                                                                 ORDER BY r.created_at DESC
+                                                                 LIMIT 5";
+                                            $recent_reports = $conn->query($recent_reports_sql);
+                                            
+                                            if ($recent_reports->num_rows > 0):
+                                                while ($report = $recent_reports->fetch_assoc()):
+                                            ?>
+                                                <div class="card mb-3 border-warning">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-start">
+                                                            <div>
+                                                                <h6 class="mb-1">
+                                                                    ผู้ถูกรายงาน: <?php echo htmlspecialchars($report['reported_username']); ?>
+                                                                    <span class="badge bg-warning ms-2">
+                                                                        รายงานทั้งหมด: <?php echo $report['total_reports']; ?>
+                                                                    </span>
+                                                                </h6>
+                                                                <p class="mb-1">
+                                                                    <small class="text-muted">
+                                                                        รายงานโดย: <?php echo htmlspecialchars($report['reporter_username']); ?>
+                                                                            | วันที่: <?php echo date('d/m/Y H:i', strtotime($report['created_at'])); ?>
+                                                                    </small>
+                                                                </p>
+                                                                <p class="mb-2">
+                                                                    <span class="badge bg-primary">
+                                                                        <?php 
+                                                                        switch($report['violation_type']) {
+                                                                            case 'no_show': echo 'ไม่มาตามนัด'; break;
+                                                                            case 'harassment': echo 'การคุกคาม/ก่อกวน'; break;
+                                                                            case 'inappropriate': echo 'พฤติกรรมไม่เหมาะสม'; break;
+                                                                            case 'scam': echo 'การหลอกลวง'; break;
+                                                                            default: echo 'อื่นๆ';
+                                                                        }
+                                                                        ?>
+                                                                    </span>
+                                                                </p>
+                                                                <p class="mb-0"><?php echo nl2br(htmlspecialchars($report['description'])); ?></p>
+                                                            </div>
+                                                            <a href="admin/manage_reports.php" class="btn btn-outline-primary btn-sm">
+                                                                <i class="fas fa-external-link-alt"></i> ดูรายละเอียด
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php 
+                                                endwhile;
+                                            else:
+                                            ?>
+                                                <div class="text-center py-5">
+                                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                                    <p class="text-muted">ไม่มีรายงานที่รอดำเนินการ</p>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

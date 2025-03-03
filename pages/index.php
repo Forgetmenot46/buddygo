@@ -296,6 +296,129 @@ $posts_result = $posts_stmt->get_result();
             font-size: 0.75rem;
             padding: 0.2rem 0.5rem;
         }
+
+        /* CSS สำหรับ pop-up */
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .popup-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .popup-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 32px;
+            color: #666;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #f8f8f8;
+        }
+
+        .close:hover {
+            color: #333;
+            background-color: #eee;
+            transform: rotate(90deg);
+        }
+
+        .popup-image-container {
+            width: 100%;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .popup-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .popup-image-container img:hover {
+            transform: scale(1.02);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .popup-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .popup-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .popup-button.close-btn {
+            background-color: #f8f8f8;
+            color: #333;
+        }
+
+        .popup-button.close-btn:hover {
+            background-color: #eee;
+        }
     </style>
 </head>
 
@@ -694,6 +817,26 @@ $posts_result = $posts_stmt->get_result();
         </div>
     </div>
 
+    <div id="adPopup" class="popup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h2>โฆษณา</h2>
+                <span class="close" onclick="closeAdPopup()">&times;</span>
+            </div>
+            <div class="popup-image-container">
+                <?php
+                // เรียกใช้ฟังก์ชันเพื่อแสดงโฆษณาแบบสุ่ม
+                $adsDir = '../assets/images/squre-ads/';
+                $ads = glob($adsDir . '*.jpg');
+                if (!empty($ads)) {
+                    $randomAd = $ads[array_rand($ads)];
+                    echo '<img src="' . htmlspecialchars($randomAd) . '" alt="Ad" class="img-fluid">';
+                }
+                ?>
+            </div>
+        </div>
+    </div>
+
     <script>
         <?php if (isset($_SESSION['alert'])): ?>
             alert('<?php echo addslashes($_SESSION['alert']['message']); ?>');
@@ -795,6 +938,33 @@ $posts_result = $posts_stmt->get_result();
                     window.location.href = 'post_detail.php?post_id=' + postId;
                 });
         }
+
+        function closeAdPopup() {
+            const popup = document.getElementById('adPopup');
+            popup.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => {
+                popup.style.display = 'none';
+                popup.style.animation = '';
+            }, 300);
+        }
+
+        // แสดง pop-up เมื่อโหลดหน้า
+        window.onload = function() {
+            const adPopup = document.getElementById('adPopup');
+            setTimeout(() => {
+                adPopup.style.display = 'block';
+            }, 500); // แสดง pop-up หลังจากโหลดหน้าเสร็จ 500ms
+        };
+
+        // เพิ่ม event listener สำหรับการปิด pop-up เมื่อคลิกพื้นหลัง
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('adPopup');
+            popup.addEventListener('click', function(e) {
+                if (e.target === popup) {
+                    closeAdPopup();
+                }
+            });
+        });
     </script>
 
 </body>

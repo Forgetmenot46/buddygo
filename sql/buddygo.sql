@@ -27,11 +27,10 @@ DELIMITER $$
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `check_expired_groups` ()   BEGIN
     -- Update groups to expired where travel date has passed
-    UPDATE chat_groups g
-    JOIN community_posts p ON g.post_id = p.post_id
-    SET g.status = 'expired'
-    WHERE p.travel_date < CURDATE() 
-    AND g.status = 'active';
+    UPDATE community_posts p
+    SET p.status = 'expired'
+    WHERE p.activity_date < CURDATE() 
+    AND p.status = 'active';
 END$$
 
 DELIMITER ;
@@ -265,16 +264,17 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `role` enum('user','admin') DEFAULT 'user',
-  `profile_picture` varchar(255) DEFAULT 'default1.png'
+  `profile_picture` varchar(255) DEFAULT 'default1.png',
+  `status` enum('active','suspended','banned') NOT NULL DEFAULT 'active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `firstname`, `lastname`, `username`, `nickname`, `birthdate`, `country_id`, `phone_number`, `email`, `password`, `gender`, `verified_status`, `last_login`, `is_admin`, `phone_verified`, `created_at`, `updated_at`, `role`, `profile_picture`) VALUES
-(18, 'Real', 'Admin', 'Admin', NULL, '1975-07-16', 1, '1234567890', '12345Tester6789@gmail.com', '$2y$10$N1Tr/kIoAD7hPlHUeYpehurnRQVuIKOUDnL.YjHBcpPhsxBmCnAJC', 'male', 1, '2025-02-28 16:52:34', 1, 0, '2025-02-28 16:52:34', '2025-03-01 15:47:10', 'user', 'default2.png'),
-(19, 'Realนะ', 'Admin2', 'Admin2', NULL, '2025-03-05', 1, '1239506984', 'wwwAdmin2@gmail.com', '$2y$10$6CvmU9RLqNJL5pduDorhF.5dQ.xI1NeHtkW5hSnIEey04Fnjz9gvi', 'female', 0, '2025-02-28 17:46:00', 0, 0, '2025-02-28 17:46:00', '2025-03-01 10:17:05', 'user', 'avatar.png');
+INSERT INTO `users` (`id`, `firstname`, `lastname`, `username`, `nickname`, `birthdate`, `country_id`, `phone_number`, `email`, `password`, `gender`, `verified_status`, `last_login`, `is_admin`, `phone_verified`, `created_at`, `updated_at`, `role`, `profile_picture`, `status`) VALUES
+(18, 'Real', 'Admin', 'Admin', NULL, '1975-07-16', 1, '1234567890', '12345Tester6789@gmail.com', '$2y$10$N1Tr/kIoAD7hPlHUeYpehurnRQVuIKOUDnL.YjHBcpPhsxBmCnAJC', 'male', 1, '2025-02-28 16:52:34', 1, 0, '2025-02-28 16:52:34', '2025-03-01 15:47:10', 'user', 'default2.png', 'active'),
+(19, 'Realนะ', 'Admin2', 'Admin2', NULL, '2025-03-05', 1, '1239506984', 'wwwAdmin2@gmail.com', '$2y$10$6CvmU9RLqNJL5pduDorhF.5dQ.xI1NeHtkW5hSnIEey04Fnjz9gvi', 'female', 0, '2025-02-28 17:46:00', 0, 0, '2025-02-28 17:46:00', '2025-03-01 10:17:05', 'user', 'avatar.png', 'active');
 
 -- --------------------------------------------------------
 
@@ -324,6 +324,22 @@ INSERT INTO `user_languages` (`user_id`, `language_id`) VALUES
 (18, 3),
 (19, 3),
 (19, 4);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `messages`
+--
+
+CREATE TABLE `messages` (
+  `message_id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  `post_id` int(11) DEFAULT NULL,
+  `message_text` text NOT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Indexes for dumped tables
@@ -402,6 +418,15 @@ ALTER TABLE `user_languages`
   ADD KEY `language_id` (`language_id`);
 
 --
+-- Indexes for table `messages`
+--
+ALTER TABLE `messages`
+  ADD PRIMARY KEY (`message_id`),
+  ADD KEY `sender_id` (`sender_id`),
+  ADD KEY `receiver_id` (`receiver_id`),
+  ADD KEY `post_id` (`post_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -448,6 +473,12 @@ ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
+-- AUTO_INCREMENT for table `messages`
+--
+ALTER TABLE `messages`
+  MODIFY `message_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -481,17 +512,62 @@ ALTER TABLE `users`
 -- Constraints for table `user_interests`
 --
 ALTER TABLE `user_interests`
-  ADD CONSTRAINT `user_interests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `user_interests_ibfk_2` FOREIGN KEY (`interest_id`) REFERENCES `interests` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `user_interests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `user_interests_ibfk_2` FOREIGN KEY (`interest_id`) REFERENCES `interests` (`id`);
 
 --
 -- Constraints for table `user_languages`
 --
 ALTER TABLE `user_languages`
-  ADD CONSTRAINT `user_languages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `user_languages_ibfk_2` FOREIGN KEY (`language_id`) REFERENCES `languages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `user_languages_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `user_languages_ibfk_2` FOREIGN KEY (`language_id`) REFERENCES `languages` (`id`);
+
+--
+-- Constraints for table `messages`
+--
+ALTER TABLE `messages`
+  ADD CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `messages_ibfk_3` FOREIGN KEY (`post_id`) REFERENCES `community_posts` (`post_id`) ON DELETE SET NULL;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+-- Drop tables if they exist (in reverse order of dependencies)
+DROP TABLE IF EXISTS chat_messages;
+DROP TABLE IF EXISTS chat_group_members;
+DROP TABLE IF EXISTS chat_groups;
+
+-- Create chat_groups table
+CREATE TABLE chat_groups (
+    group_id INT PRIMARY KEY AUTO_INCREMENT,
+    post_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES community_posts(post_id) ON DELETE CASCADE
+);
+
+-- Create chat_group_members table
+CREATE TABLE chat_group_members (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    group_id INT NOT NULL,
+    user_id INT NOT NULL,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (group_id) REFERENCES chat_groups(group_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_member (group_id, user_id)
+);
+
+-- Create chat_messages table
+CREATE TABLE chat_messages (
+    message_id INT PRIMARY KEY AUTO_INCREMENT,
+    group_id INT NOT NULL,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (group_id) REFERENCES chat_groups(group_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+); 

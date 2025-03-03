@@ -30,41 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     created_at, updated_at, post_local, max_members, current_members, activity_image
                 ) VALUES (
                     ?, ?, ?, ?, ?, 
-                    NOW(), NOW(), ?, ?, 1, ?
+                    NOW(), NOW(), ?, ?, 1, 'default.jpg'
                 )";
-
-        // จัดการรูปภาพ QR Code
-        $activity_image = null;
-        if (isset($_FILES['activity_image']) && $_FILES['activity_image']['error'] == 0) {
-            $file = $_FILES['activity_image'];
-            $allowed = ['jpg', 'jpeg', 'png'];
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-
-            if (in_array($ext, $allowed)) {
-                $activity_image = uniqid() . '.' . $ext;
-                $upload_dir = '../uploads/qr_code';
-                if (!file_exists($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
-                }
-
-                $upload_path = $upload_dir . '/' . $activity_image;
-                if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
-                    throw new Exception('ไม่สามารถอัพโหลดไฟล์ได้');
-                }
-            }
-        }
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
-            'ssisssis',
+            'ssisssi',
             $title,
             $description,
             $user_id,
             $activity_date,
             $activity_time,
             $post_local,
-            $max_members,
-            $activity_image
+            $max_members
         );
         $stmt->execute();
 
@@ -95,6 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'type' => 'success',
             'message' => 'โพสต์และกิจกรรมถูกสร้างเรียบร้อยแล้ว!'
         ];
+        
+        // เปลี่ยนเส้นทางไปยังหน้ารายละเอียดกิจกรรม
         header("Location: post_detail.php?post_id=" . $post_id);
         exit();
     } catch (Exception $e) {
@@ -239,13 +219,6 @@ $interests = $result->fetch_all(MYSQLI_ASSOC);
                                         <label for="activity_time" class="form-label">เวลาเริ่มกิจกรรม</label>
                                         <input type="time" class="form-control" id="activity_time" name="activity_time" required>
                                     </div>
-                                </div>
-
-                                <!-- QR Code -->
-                                <div class="mb-3">
-                                    <label for="activity_image" class="form-label">รูปภาพ QR Code เข้ากลุ่ม LINE</label>
-                                    <input type="file" class="form-control" id="activity_image" name="activity_image" accept="image/*">
-                                    <small class="text-muted">รองรับไฟล์ภาพ jpg, jpeg, png ขนาดไม่เกิน 5MB</small>
                                 </div>
 
                                 <!-- ความสนใจ -->
